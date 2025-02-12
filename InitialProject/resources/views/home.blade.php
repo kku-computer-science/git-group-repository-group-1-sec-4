@@ -278,9 +278,10 @@
 
         title: {
             display: true,
-            text: 'Report the total number of articles ( 5 years : cumulative)',
+            text: 'Report the total number of articles ( 5 years : cumulative)',//--Report the total number of articles ( 5 years : cumulative) On Board
             fontSize: 20
         }
+        
 
 
     }

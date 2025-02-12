@@ -1,7 +1,7 @@
 @extends('layouts.layout')
 @section('content')
 <div class="container card-2">
-    <p class="title"> Researchers </p>
+    <p class="title">{{ trans('message.researchers_title') }}</p>
     @foreach($request as $res)
     <span>
         <ion-icon name="caret-forward-outline" size="small"></ion-icon> {{$res->program_name_en}}
@@ -11,7 +11,7 @@
             <form class="row row-cols-lg-auto g-3" method="GET" action="{{ route('searchresearchers',['id'=>$res->id])}}">
                 <div class="col-md-8">
                     <div class="input-group">
-                        <input type="text" class="form-control" name="textsearch" placeholder="Research interests">
+                        <input type="text" class="form-control" name="textsearch" placeholder="{{ trans('message.search_placeholder') }}">
                     </div>
                 </div>
                 <!-- <div class="col-12">
@@ -22,9 +22,9 @@
                             <option value="2">Two</option>
                             <option value="3">Three</option>
                         </select>
-                    </div> -->
+                        </div> -->
                 <div class="col-md-4">
-                    <button type="submit" class="btn btn-outline-primary">Search</button>
+                    <button type="submit" class="btn btn-outline-primary">{{ trans('message.search_button') }}</button>
                 </div>
             </form>
         </div>
@@ -45,9 +45,12 @@
 
                                 @if($r->doctoral_degree == 'Ph.D.')
                                 <h5 class="card-title">{{ $r->{'fname_'.app()->getLocale()} }} {{ $r->{'lname_'.app()->getLocale()} }}, {{$r->doctoral_degree}}
+                                @elseif($r->doctoral_degree_cn == '博士')
+                                <h5 class="card-title">{{ $r->{'fname_'.app()->getLocale()} }} {{ $r->{'lname_'.app()->getLocale()} }}, {{$r->doctoral_degree_cn}}
                                 @else
                                 <h5 class="card-title">{{ $r->{'fname_'.app()->getLocale()} }} {{ $r->{'lname_'.app()->getLocale()} }}</h5>
                                 @endif
+
 
 
                                 <!-- <h5 class="card-title">{{ $r->{'fname_'.app()->getLocale()} }} {{ $r->{'lname_'.app()->getLocale()} }}</h5> -->

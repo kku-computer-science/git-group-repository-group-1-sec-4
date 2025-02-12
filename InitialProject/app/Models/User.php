@@ -27,6 +27,7 @@ class User extends Authenticatable
         'doctoral_degree',
         'academic_ranks_en',
         'academic_ranks_th',
+        'academic_ranks_cn',
         'position_en',
         'position_th',
         'title_name_th',
