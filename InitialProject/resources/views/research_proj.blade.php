@@ -2,24 +2,18 @@
 @section('content')
 
 <div class="container refund">
-    <p>โครงการบริการวิชาการ/ โครงการวิจัย</p>
+    <p>{{ trans('message.text') }}</p>
 
     <div class="table-refund table-responsive">
         <table id="example1" class="table table-striped" style="width:100%">
             <thead>
                 <tr>
-                    <th style="font-weight: bold;">ลำดับ</th>
-                    <th class="col-md-1" style="font-weight: bold;">ปี</th>
-                    <th class="col-md-4" style="font-weight: bold;">ชื่อโครงการ </th>
-                    <!-- <th>ระยะเวลาโครงการ</th>
-                    <th>ผู้รับผิดชอบโครงการ</th>
-                    <th>ประเภททุนวิจัย</th>
-                    <th>หน่วยงานที่สนันสนุนทุน</th>
-                    <th>งบประมาณที่ได้รับจัดสรร</th> -->
-                    <th class="col-md-4" style="font-weight: bold;">รายละเอียด</th>
-                    <th class="col-md-2" style="font-weight: bold;">ผู้รับผิดชอบโครงการ</th>
-                    <!-- <th class="col-md-5">หน่วยงานที่รับผิดชอบ</th> -->
-                    <th class="col-md-1" style="font-weight: bold;">สถานะ</th>
+                    <<th style="font-weight: bold;">{{ trans('message.number') }}</th>
+                    <th class="col-md-1" style="font-weight: bold;">{{ trans('message.year') }}</th>
+                    <th class="col-md-4" style="font-weight: bold;">{{ trans('message.cnname') }}</th>
+                    <th class="col-md-4" style="font-weight: bold;">{{ trans('message.detail') }}</th>
+                    <th class="col-md-2" style="font-weight: bold;">{{ trans('message.responsible') }}</th>
+                    <th class="col-md-1" style="font-weight: bold;">{{ trans('message.status') }}</th>
                 </tr>
             </thead>
 
@@ -38,14 +32,14 @@
 
                             @if ($re->project_start != null)
                             <span style="font-weight: bold;">
-                                ระยะเวลาโครงการ
+                            {{ trans('message.in_progress') }}
                             </span>
                             <span style="padding-left: 10px;">
                                 {{\Carbon\Carbon::parse($re->project_start)->thaidate('j F Y') }} ถึง {{\Carbon\Carbon::parse($re->project_end)->thaidate('j F Y') }}
                             </span>
                             @else
                             <span style="font-weight: bold;">
-                                ระยะเวลาโครงการ
+                            {{ trans('message.in_progress') }}
                             </span>
                             <span>
 
@@ -77,28 +71,28 @@
                     </td> -->
                         <!-- <td>{{$re->budget}}</td> -->
                         <div style="padding-bottom: 10px;">
-                            <span style="font-weight: bold;">ประเภททุนวิจัย</span>
+                            <span style="font-weight: bold;">{{ trans('message.t_budget') }}</span>
                             <span style="padding-left: 10px;"> @if(is_null($re->fund))
                                 @else
                                 {{$re->fund->fund_type}}
                                 @endif</span>
                         </div>
                         <div style="padding-bottom: 10px;">
-                            <span style="font-weight: bold;">หน่วยงานที่สนันสนุนทุน</span>
+                            <span style="font-weight: bold;">{{ trans('message.support') }}</span>
                             <span style="padding-left: 10px;"> @if(is_null($re->fund))
                                 @else
                                 {{$re->fund->support_resource}}
                                 @endif</span>
                         </div>
                         <div style="padding-bottom: 10px;">
-                            <span style="font-weight: bold;">หน่วยงานที่รับผิดชอบ</span>
+                            <span style="font-weight: bold;">{{ trans('message.t_respon') }}</span>
                             <span style="padding-left: 10px;">
                                 {{$re->responsible_department}}
                             </span>
                         </div>
                         <div style="padding-bottom: 10px;">
 
-                            <span style="font-weight: bold;">งบประมาณที่ได้รับจัดสรร</span>
+                            <span style="font-weight: bold;">{{ trans('message.t_budget') }}</span>
                             <span style="padding-left: 10px;"> {{number_format($re->budget)}} บาท</span>
                         </div>
                     </td>
@@ -120,7 +114,7 @@
                     </td>
                     @else
                     <td style="vertical-align: top;text-align: left;">
-                        <h6><label class="badge bg-dark">ปิดโครงการ</label>
+                        <h6><label class="badge bg-dark">{{ trans('message.closeproject') }}</label>
                             <h6>
                     </td>
                     @endif

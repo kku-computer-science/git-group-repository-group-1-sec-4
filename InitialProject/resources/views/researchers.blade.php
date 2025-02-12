@@ -62,10 +62,16 @@
                                 @endif
                                 <p class="card-text-1">{{ trans('message.expertise') }}</p>
                                 <div class="card-expertise">
-                                    @foreach($r->expertise->sortBy('expert_name') as $exper)
-                                    <p class="card-text"> {{$exper->expert_name}}</p>
-                                    @endforeach
-                                </div>
+                                @foreach($r->expertise->sortBy('expert_name') as $exper)
+                                    <p class="card-text">
+                                        @if(app()->getLocale() == 'cn')
+                                            {{$exper->expert_name_cn}}  <!-- ถ้าภาษาเป็นจีน ให้แสดงชื่อความเชี่ยวชาญเป็นภาษาจีน -->
+                                        @else
+                                            {{$exper->expert_name}}  <!-- ถ้าเป็นภาษาอื่นๆ แสดงชื่อความเชี่ยวชาญเป็นภาษาอื่น -->
+                                        @endif
+                                    </p>
+                                @endforeach
+                            </div>
                         </div>
                     </diV>
                 </div>

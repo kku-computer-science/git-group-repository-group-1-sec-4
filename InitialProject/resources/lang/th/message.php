@@ -13,5 +13,10 @@ return [
 'search_placeholder' => 'ค้นหางานวิจัยที่สนใจ',
 'search_button' => 'ค้นหา',
 'researchers_title' => 'นักวิจัย',
-
+'number' => 'ลำดับ',
+'year' => 'ปี',
+'cnname' => 'ชื่อโครงการ',
+'detail' => 'รายละเอียด',
+'responsible' => 'ผู้รับผิดชอบโครงการ',
+'status' => 'สถานะ',
 ];
