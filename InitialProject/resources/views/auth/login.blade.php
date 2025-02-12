@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_','-', app()->getLocale()) }}"> 
 
 <head>
-	<title>Login</title>
+<title>{{ __('auth.login_title') }}</title>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link href="img/Newlogo.png" rel="shortcut icon" type="image/x-icon" />
@@ -378,50 +378,60 @@
 	<div class="form">
 		<div class="form-toggle"></div>
 		<div class="form-panel one">
-			<div class="form-header">
-				<h1>Account Login</h1>
-			</div>
-			<div class="form-content">
-				<form method="POST" class="validate-form" autocomplete="off" action="{{ route('login') }}">
-					@csrf
-					@if($errors->any())
-					<div class=" alert alert-danger alert-block ">
-						<button type=" button" class="close" data-dismiss="alert"></button>
-						<strong><a>{{$errors->first()}}</a></strong>
-					</div>
-					@endif
-					<!-- <div class="form-group validate-input" data-validate="Valid email is required: ex@abc.xyz"> -->
-					<div class="form-group validate-input">
-						<label for="email">Username</label>
-						<input id="username" type="username" class="form-control @error('username') is-invalid @enderror" name="username" value="{{ old('username') }}" required autofocus>
-						@error('username')
-						<span class="invalid-feedback" role="alert">
-							<strong>{{ $message }}</strong>
-						</span>
-						@enderror
-					</div>
-					<div class="form-group validate-input" data-validate="Password is required">
-						<label for="password">Password</label>
-						<input id="password" class="input" type="password" name="password" required="required" />
-					</div>
-					<div class="form-group">
-						<label class="form-remember">
-							<input id="ckb1" name="remember" type="checkbox" />Remember Me
-						</label>
-					</div>
-					<div class="form-group">
-						<button type="submit">Log In</button>
-					</div>
-					<div class="form-remember pb-3">
-							<p style="color: red; text-align: right;"> *** หากลืมรหัสผ่าน ให้ติดต่อผู้ดูแลระบบ</p>
-					</div>
-					<ul>
-						<li>สำหรับ Username ใช้ KKU-Mail ในการเข้าสู่ระบบ</li>
-						<li>สำหรับนักศึกษาที่เข้าระบบเป็นครั้งแรกให้เข้าสู่ระด้วยรหัสนักศึกษา</li>
-					</ul>
-				</form>
-			</div>
-		</div>
+      <div class="form-header">
+        <!-- h1 จากไฟล์ภาษา auth.php -->
+        <h1>{{ __('auth.login_title') }}</h1>
+      </div>
+      <div class="form-content">
+        <form method="POST" class="validate-form" autocomplete="off" action="{{ route('login') }}">
+          @csrf
+          @if($errors->any())
+            ...
+          @endif
+          <div class="form-group validate-input">
+            <!-- label และ placeholder อิงไฟล์ auth.php -->
+            <label for="username">{{ __('auth.username') }}</label>
+            <input id="username" type="username" name="username" placeholder="{{ __('auth.username') }}"
+                   class="form-control @error('username') is-invalid @enderror"
+                   value="{{ old('username') }}" required autofocus>
+            @error('username')
+            <span class="invalid-feedback" role="alert">
+              <strong>{{ $message }}</strong>
+            </span>
+            @enderror
+          </div>
+
+          <div class="form-group validate-input">
+            <label for="password">{{ __('auth.password') }}</label>
+            <input id="password" type="password" name="password" placeholder="{{ __('auth.password') }}" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-remember">
+              <input id="ckb1" name="remember" type="checkbox" />
+              {{ __('auth.remember_me') }}
+            </label>
+          </div>
+          <div class="form-group">
+            <!-- ปุ่ม login ก็ใช้ key จาก auth.php -->
+            <button type="submit">{{ __('auth.login_btn') }}</button>
+          </div>
+
+          <!-- ข้อความลืมรหัสผ่าน -->
+          <div class="form-remember pb-3">
+            <p style="color: red; text-align: right;">
+              {{ __('auth.forgot_password') }}
+            </p>
+          </div>
+
+          <!-- ul สองบรรทัดด้านล่างก็ใช้ key ที่สร้างไว้ใน auth.php -->
+          <ul>
+            <li>{{ __('auth.use_kku_mail') }}</li>
+            <li>{{ __('auth.first_time') }}</li>
+          </ul>
+        </form>
+      </div>
+    </div>
 
 
 	</div>
