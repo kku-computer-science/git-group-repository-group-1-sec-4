@@ -106,11 +106,11 @@
                     </td>
                     @if($re->status == 1)
                     <td style="vertical-align: top;text-align: left;">
-                        <h6><label class="badge badge-success">ยื่นขอ</label></h6>
+                        <h6><label class="badge badge-success">{{ trans('message.request') }}</label></h6>
                     </td>
                     @elseif($re->status == 2)
                     <td style="vertical-align: top;text-align: left;">
-                        <h6><label class="badge bg-warning text-dark">ดำเนินการ</label></h6>
+                        <h6><label class="badge bg-warning text-dark">{{ trans('message.inprogress') }}</label></h6>
                     </td>
                     @else
                     <td style="vertical-align: top;text-align: left;">

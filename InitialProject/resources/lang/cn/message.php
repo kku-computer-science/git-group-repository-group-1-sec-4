@@ -29,4 +29,6 @@ return [
 'budget' => '分配的预算',
 'in_budget' => '内部资本',
 'closeproject' => '关闭项目',
+'request' => '要求',
+'inprogress' => '进行中',
 ];
