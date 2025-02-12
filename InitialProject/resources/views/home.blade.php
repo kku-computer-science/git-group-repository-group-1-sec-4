@@ -171,7 +171,7 @@
                                     <!-- <a href="{{ route('bibtex',['id'=>$p['id']])}}">
                                         [อ้างอิง]
                                     </a> -->
-                                    <button style="padding: 0;"class="btn btn-link open_modal" value="{{$p['id']}}">[อ้างอิง]</button>
+                                    <button style="padding: 0;"class="btn btn-link open_modal" value="{{$p['id']}}">{{ trans(('message.reference')) }}</button>
                                 </p>
                             </div>
                         </div>
@@ -258,7 +258,9 @@
     var temp1 = areaChartData.datasets[1]
     barChartData.datasets[0] = temp1
     barChartData.datasets[1] = temp0
-
+    var chartTitle = "{{ trans('message.reporttitle') }}";
+    var chartNumber = "{{ trans('message.number') }}";
+    var chartYear = "{{ trans('message.year') }}";
     var barChartOptions = {
         responsive: true,
         maintainAspectRatio: false,
@@ -270,7 +272,7 @@
                 },
                 scaleLabel: {
                     display: true,
-                    labelString: 'Number',
+                    labelString: chartNumber,
 
                 },
                 ticks: {
@@ -281,16 +283,16 @@
             xAxes: [{
                 scaleLabel: {
                     display: true,
-                    labelString: 'Year'
+                    labelString: chartYear
                 }
             }]
         },
 
         title: {
             display: true,
-            text: 'Report the total number of articles ( 5 years : cumulative)',
+            text: chartTitle,
             fontSize: 20
-        }
+        },
 
 
     }

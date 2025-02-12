@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+
 use App\Models\Department;
 use App\Models\Program;
-use DB;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -229,8 +231,8 @@ class UserController extends Controller
             $oldPicture = User::find(Auth::user()->id)->getAttributes()['picture'];
 
             if( $oldPicture != '' ){
-                if( \File::exists(public_path($path.$oldPicture))){
-                    \File::delete(public_path($path.$oldPicture));
+                if( \Illuminate\Support\Facades\File::exists(public_path($path.$oldPicture))){
+                    \Illuminate\Support\Facades\File::delete(public_path($path.$oldPicture));
                 }
             }
 
