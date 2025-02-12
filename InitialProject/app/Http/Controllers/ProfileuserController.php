@@ -53,7 +53,7 @@ class ProfileuserController extends Controller
 
         ]);
 
-        if (!$validator->passes()) {
+        if ($validator->fails()) {
             return response()->json(['status' => 0, 'error' => $validator->errors()->toArray()]);
         } else {
             $id = Auth::user()->id;
@@ -73,10 +73,13 @@ class ProfileuserController extends Controller
             $pos_eng = '';
             $pos_thai = '';
             $pos_cn = '';
-            if (Auth::user()->hasRole('admin') or Auth::user()->hasRole('student') ) {
-                $request->academic_ranks_en = null;
-                $request->academic_ranks_th = null;
-                $request->academic_ranks_cn = null;
+            if (false) {
+                $request->merge([
+                    'academic_ranks_en' => $request->input('academic_ranks_en', null),
+                    'academic_ranks_th' => $request->input('academic_ranks_th', null),
+                    'academic_ranks_cn' => $request->input('academic_ranks_cn', null),
+                ]);
+                
                 $pos_eng = null;
                 $pos_thai = null;
                 $pos_cn = null;
@@ -110,7 +113,6 @@ class ProfileuserController extends Controller
                         $pos_thai = $pos_th . 'ดร.';
                         $pos_cn = $pos_cn . '博士.';
                         $doctoral = 'Ph.D.';
-                        
                     } else {
                         $pos_eng = $pos_en . ' Dr.';
                         $pos_thai = $pos_th . 'ดร.';
@@ -128,9 +130,11 @@ class ProfileuserController extends Controller
                 'fname_cn' => $request->fname_cn,
                 'lname_cn' => $request->lname_cn,
                 'email' => $request->email,
-                'academic_ranks_en' => $request->academic_ranks_en,
-                'academic_ranks_th' => $request->academic_ranks_th,
-                'academic_ranks_cn' => $request->academic_ranks_cn,
+                'academic_ranks_en' => $request->has('academic_ranks_en') ? $request->academic_ranks_en : null,
+
+                'academic_ranks_th' => $request->has('academic_ranks_th') ? $request->academic_ranks_th : null,
+                'academic_ranks_cn' => $request->has('academic_ranks_cn') ? $request->academic_ranks_cn : null,
+
                 'position_en' => $pos_eng,
                 'position_th' => $pos_thai,
                 'position_cn' => $pos_cn,
@@ -170,8 +174,8 @@ class ProfileuserController extends Controller
             $oldPicture = User::find(Auth::user()->id)->getAttributes()['picture'];
 
             if ($oldPicture != '') {
-                if (\File::exists(public_path($path . $oldPicture))) {
-                    \File::delete(public_path($path . $oldPicture));
+                if (File::exists(public_path($path . $oldPicture))) {
+                    File::delete(public_path($path . $oldPicture));
                 }
             }
 
@@ -190,10 +194,11 @@ class ProfileuserController extends Controller
     function changePassword(Request $request)
     {
         //Validate form
-        $validator = \Validator::make($request->all(), [
+        $validator = Validator::make($request->all(), [
             'oldpassword' => [
-                'required', function ($attribute, $value, $fail) {
-                    if (!\Hash::check($value, Auth::user()->password)) {
+                'required',
+                function ($attribute, $value, $fail) {
+                    if (!Hash::check($value, Auth::user()->password)) {
                         return $fail(__('The current password is incorrect'));
                     }
                 },
@@ -213,11 +218,11 @@ class ProfileuserController extends Controller
             'cnewpassword.same' => 'New password and Confirm new password must match'
         ]);
 
-        if (!$validator->passes()) {
+        if ($validator->fails()) {
             return response()->json(['status' => 0, 'error' => $validator->errors()->toArray()]);
         } else {
 
-            $update = User::find(Auth::user()->id)->update(['password' => \Hash::make($request->newpassword)]);
+            $update = User::find(Auth::user()->id)->update(['password' => !Hash::make($request->newpassword)]);
 
             if (!$update) {
                 return response()->json(['status' => 0, 'msg' => 'Something went wrong, Failed to update password in db']);

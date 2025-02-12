@@ -49,7 +49,7 @@
 
     <link rel="stylesheet" href="{{asset('css/style.css')}}">
 
-    
+
 
 </head>
 
@@ -75,8 +75,10 @@
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                             @foreach($dn as $department)
-                            <li><a class="dropdown-item" href="{{ route('researchers',['id'=>$department->id])}}">
-                                    {{$department->program_name_en}}</a>
+                            <li>
+                                <a class="dropdown-item" href="{{ route('researchers',['id'=>$department->id])}}">
+                                    {{ trans('message.' . $department->program_name_en) }}
+                                </a>
                             </li>
                             @endforeach
                         </ul>
@@ -119,7 +121,7 @@
                 </span>
                 @else
                 <span class="nav-item">
-                    <a class="btn-solid-sm" href="/login" target="_blank">Login</a>
+                    <a class="btn-solid-sm" href="/login" target="_blank">{{ trans('message.Login') }}</a>
                 </span>
                 @endauth
                 @endif

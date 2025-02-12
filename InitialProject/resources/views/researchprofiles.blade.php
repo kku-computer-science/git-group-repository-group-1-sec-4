@@ -143,18 +143,20 @@
             <button class="nav-link" id="tci-tab" data-bs-toggle="tab" data-bs-target="#tci" type="button" role="tab" aria-controls="tci" aria-selected="false">TCI</button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="book-tab" data-bs-toggle="tab" data-bs-target="#book" type="button" role="tab" aria-controls="book" aria-selected="false">หนังสือ</button>
+            <button class="nav-link" id="book-tab" data-bs-toggle="tab" data-bs-target="#book" type="button" role="tab" aria-controls="book" aria-selected="false">{{ trans('message.books') }}</button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="patent-tab" data-bs-toggle="tab" data-bs-target="#patent" type="button" role="tab" aria-controls="patent" aria-selected="false">ผลงานวิชาการด้านอื่นๆ</button>
+            <button class="nav-link" id="patent-tab" data-bs-toggle="tab" data-bs-target="#patent" type="button" role="tab" aria-controls="patent" aria-selected="false">{{ trans('message.other_academic') }}</button>
         </li>
+
     </ul>
     <br>
     <div class="tab-content" id="myTabContent">
 
         <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
             <div class="tab-content" style="padding-bottom: 20px;">
-                <a class="btn btn-success" href="{{ route('excel', ['id' => $res->id]) }}" target="_blank">Export To Excel</a>
+                <a class="btn btn-success" href="{{ route('excel', ['id' => $res->id]) }}" target="_blank">{{ trans('message.export_excel') }}</a>
+
             </div>
             <table id="example1" class="table table-striped" style="width:100%">
                 <thead>
@@ -162,16 +164,16 @@
                         <th><a href="{{ route('excel', ['id' => $res->id]) }}" target="_blank">#Export</a></td>
                     </tr> -->
                     <tr>
-                        <th>No.</th>
-                        <th>Year</th>
-                        <th>Paper Name</th>
-                        <th>Author</th>
-                        <th>Document Type</th>
-                        <th>Page</th>
-                        <th>Journals/Transactions</th>
-                        <th>Ciations</th>
-                        <th>Doi</th>
-                        <th>Source</th>
+                        <th>{{ trans('message.no') }}</th>
+                        <th>{{ trans('message.year') }}</th>
+                        <th>{{ trans('message.paper_name') }}</th>
+                        <th>{{ trans('message.author') }}</th>
+                        <th>{{ trans('message.document_type') }}</th>
+                        <th>{{ trans('message.page') }}</th>
+                        <th>{{ trans('message.journals_transactions') }}</th>
+                        <th>{{ trans('message.citations') }}</th>
+                        <th>{{ trans('message.doi') }}</th>
+                        <th>{{ trans('message.source') }}</th>
                     </tr>
                 </thead>
 
@@ -189,9 +191,10 @@
                             </span>
                             @endforeach
                             @foreach ($paper->teacher as $author)
-                            <span >
+                            <span>
                                 <a href="{{ route('detail',Crypt::encrypt($author->id))}}">
-                                    <teacher>{{$author -> fname_en}} {{$author -> lname_en}}</teacher></a>
+                                    <teacher>{{$author -> fname_en}} {{$author -> lname_en}}</teacher>
+                                </a>
                             </span>
                             @endforeach
                         </td>
@@ -247,7 +250,8 @@
                             @foreach ($paper->teacher as $author)
                             <span>
                                 <a href="{{ route('detail',Crypt::encrypt($author->id))}}">
-                                    <teacher>{{$author -> fname_en}} {{$author -> lname_en}}</teacher></a>
+                                    <teacher>{{$author -> fname_en}} {{$author -> lname_en}}</teacher>
+                                </a>
                             </span>
                             @endforeach
                         </td>
@@ -299,7 +303,8 @@
                             @foreach ($paper->teacher as $author)
                             <span>
                                 <a href="{{ route('detail',Crypt::encrypt($author->id))}}">
-                                    <teacher>{{$author -> fname_en}} {{$author -> lname_en}}</teacher></a>
+                                    <teacher>{{$author -> fname_en}} {{$author -> lname_en}}</teacher>
+                                </a>
                             </span>
                             @endforeach
                         </td>
@@ -351,7 +356,8 @@
                             @foreach ($paper->teacher as $author)
                             <span>
                                 <a href="{{ route('detail',Crypt::encrypt($author->id))}}">
-                                    <teacher>{{$author -> fname_en}} {{$author -> lname_en}}</teacher></a>
+                                    <teacher>{{$author -> fname_en}} {{$author -> lname_en}}</teacher>
+                                </a>
                             </span>
                             @endforeach
                         </td>
@@ -438,7 +444,8 @@
                             @foreach ($paper->user as $author)
                             <span>
                                 <a href="{{ route('detail',Crypt::encrypt($author->id))}}">
-                                    <teacher>{{$author -> fname_en}} {{$author -> lname_en}}</teacher></a>
+                                    <teacher>{{$author -> fname_en}} {{$author -> lname_en}}</teacher>
+                                </a>
 
                             </span>
                             @endforeach
@@ -465,48 +472,83 @@
 
 <script>
     $(document).ready(function() {
-
         var table1 = $('#example1').DataTable({
             responsive: true,
+            "language": {
+                "search": "{{ trans('message.search') }}",
+                "lengthMenu": "{{ trans('message.show_entries') }}",
+                "info": "{{ trans('message.showing_entries') }}",
+                "paginate": {
+                    "previous": "{{ trans('message.previous') }}",
+                    "next": "{{ trans('message.next') }}"
+                }
+            }
         });
 
         var table2 = $('#example2').DataTable({
             responsive: true,
+            "language": {
+                "search": "{{ trans('message.search') }}",
+                "lengthMenu": "{{ trans('message.show_entries') }}",
+                "info": "{{ trans('message.showing_entries') }}",
+                "paginate": {
+                    "previous": "{{ trans('message.previous') }}",
+                    "next": "{{ trans('message.next') }}"
+                }
+            }
         });
+
         var table3 = $('#example3').DataTable({
             responsive: true,
+            "language": {
+                "search": "{{ trans('message.search') }}",
+                "lengthMenu": "{{ trans('message.show_entries') }}",
+                "info": "{{ trans('message.showing_entries') }}",
+                "paginate": {
+                    "previous": "{{ trans('message.previous') }}",
+                    "next": "{{ trans('message.next') }}"
+                }
+            }
         });
+
         var table4 = $('#example4').DataTable({
             responsive: true,
+            "language": {
+                "search": "{{ trans('message.search') }}",
+                "lengthMenu": "{{ trans('message.show_entries') }}",
+                "info": "{{ trans('message.showing_entries') }}",
+                "paginate": {
+                    "previous": "{{ trans('message.previous') }}",
+                    "next": "{{ trans('message.next') }}"
+                }
+            }
         });
+
         var table5 = $('#example5').DataTable({
             responsive: true,
+            "language": {
+                "search": "{{ trans('message.search') }}",
+                "lengthMenu": "{{ trans('message.show_entries') }}",
+                "info": "{{ trans('message.showing_entries') }}",
+                "paginate": {
+                    "previous": "{{ trans('message.previous') }}",
+                    "next": "{{ trans('message.next') }}"
+                }
+            }
         });
+
         var table6 = $('#example6').DataTable({
             responsive: true,
+            "language": {
+                "search": "{{ trans('message.search') }}",
+                "lengthMenu": "{{ trans('message.show_entries') }}",
+                "info": "{{ trans('message.showing_entries') }}",
+                "paginate": {
+                    "previous": "{{ trans('message.previous') }}",
+                    "next": "{{ trans('message.next') }}"
+                }
+            }
         });
-
-
-        $('button[data-bs-toggle="tab"]').on('shown.bs.tab', function(event) {
-            var tabID = $(event.target).attr('data-bs-target');
-            if (tabID === '#scopus') {
-                table2.columns.adjust().draw()
-            }
-            if (tabID === '#wos') {
-                table3.columns.adjust().draw()
-            }
-            if (tabID === '#tci') {
-                table4.columns.adjust().draw()
-            }
-            if (tabID === '#book') {
-                table5.columns.adjust().draw()
-            }
-            if (tabID === '#patent') {
-                table6.columns.adjust().draw()
-            }
-
-        });
-
     });
 </script>
 
