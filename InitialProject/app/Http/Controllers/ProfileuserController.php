@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use App\Models\User;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Traits\HasRoles;
 
 class ProfileuserController extends Controller
 {
@@ -44,6 +47,8 @@ class ProfileuserController extends Controller
             'lname_en' => 'required',
             'fname_th' => 'required',
             'lname_th' => 'required',
+            'fname_cn' => 'required',
+            'lname_cn' => 'required',
             'email' => 'required|email|unique:users,email,' . Auth::user()->id,
 
         ]);
@@ -67,18 +72,22 @@ class ProfileuserController extends Controller
             // $doctoral = '';
             $pos_eng = '';
             $pos_thai = '';
+            $pos_cn = '';
             if (Auth::user()->hasRole('admin') or Auth::user()->hasRole('student') ) {
                 $request->academic_ranks_en = null;
                 $request->academic_ranks_th = null;
+                $request->academic_ranks_cn = null;
                 $pos_eng = null;
                 $pos_thai = null;
+                $pos_cn = null;
                 $doctoral = null;
+                $doctoral_cn = null;
             } else {
                 if ($request->academic_ranks_en == "Professor") {
                     $pos_en = 'Prof.';
                     $pos_th = 'ศ.';
                 }
-                if ($request->academic_ranks_en == "Associate Professo") {
+                if ($request->academic_ranks_en == "Associate Professor") {
                     $pos_en = 'Assoc. Prof.';
                     $pos_th = 'รศ.';
                 }
@@ -93,16 +102,21 @@ class ProfileuserController extends Controller
                 if ($request->has('pos')) {
                     $pos_eng = $pos_en;
                     $pos_thai = $pos_th;
+                    $pos_cn = $pos_cn;
                     //$doctoral = null ;
                 } else {
                     if ($pos_en == "Lecturer") {
                         $pos_eng = $pos_en;
                         $pos_thai = $pos_th . 'ดร.';
+                        $pos_cn = $pos_cn . '博士.';
                         $doctoral = 'Ph.D.';
+                        
                     } else {
                         $pos_eng = $pos_en . ' Dr.';
                         $pos_thai = $pos_th . 'ดร.';
+                        $pos_cn = $pos_cn . '博士.';
                         $doctoral = 'Ph.D.';
+                        $doctoral_cn = '博士.';
                     }
                 }
             }
@@ -111,14 +125,19 @@ class ProfileuserController extends Controller
                 'lname_en' => $request->lname_en,
                 'fname_th' => $request->fname_th,
                 'lname_th' => $request->lname_th,
+                'fname_cn' => $request->fname_cn,
+                'lname_cn' => $request->lname_cn,
                 'email' => $request->email,
                 'academic_ranks_en' => $request->academic_ranks_en,
                 'academic_ranks_th' => $request->academic_ranks_th,
+                'academic_ranks_cn' => $request->academic_ranks_cn,
                 'position_en' => $pos_eng,
                 'position_th' => $pos_thai,
+                'position_cn' => $pos_cn,
                 'title_name_en' => $request->title_name_en,
                 'title_name_th' => $title_name_th,
                 'doctoral_degree' => $doctoral,
+                'doctoral_degree_cn' => $doctoral_cn,
 
             ]);
 

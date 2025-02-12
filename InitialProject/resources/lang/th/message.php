@@ -48,4 +48,12 @@ return [
     'showing_entries' => 'กำลังแสดง _START_ ถึง _END_ จาก _TOTAL_ รายการ',
     'previous' => 'ก่อนหน้า',
     'next' => 'ถัดไป',
+    'search_placeholder' => 'ค้นหางานวิจัยที่สนใจ',
+    'search_button' => 'ค้นหา',
+    'researchers_title' => 'นักวิจัย',
+    'number' => 'ลำดับ',
+    'cnname' => 'ชื่อโครงการ',
+    'detail' => 'รายละเอียด',
+    'responsible' => 'ผู้รับผิดชอบโครงการ',
+    'status' => 'สถานะ',
 ];

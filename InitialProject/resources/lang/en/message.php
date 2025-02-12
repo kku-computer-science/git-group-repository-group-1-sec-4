@@ -48,4 +48,7 @@ return [
     'showing_entries' => 'Showing _START_ to _END_ of _TOTAL_ entries',
     'previous' => 'Previous',
     'next' => 'Next',
+    'search_placeholder' => 'Research interests',
+    'search_button' => 'Search',
+    'researchers_title' => 'Researcher',
 ];
