@@ -43,4 +43,9 @@ return [
     'reporttitle' => 'รายงานจำนวนบทความทั้งหมด (5 ปี : สะสม)',
     'number' => 'จำนวน',
     'reference' => '[อ้างอิง]',
+    'search' => 'ค้นหา:',
+    'show_entries' => 'แสดง _MENU_ รายการ',
+    'showing_entries' => 'กำลังแสดง _START_ ถึง _END_ จาก _TOTAL_ รายการ',
+    'previous' => 'ก่อนหน้า',
+    'next' => 'ถัดไป',
 ];

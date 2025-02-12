@@ -43,4 +43,9 @@ return [
     'reporttitle' => 'Report the total number of articles (5 years : cumulative)',
     'number' => 'Number',
     'reference' => '[Reference]',
+    'search' => 'Search:',
+    'show_entries' => 'Show _MENU_ entries',
+    'showing_entries' => 'Showing _START_ to _END_ of _TOTAL_ entries',
+    'previous' => 'Previous',
+    'next' => 'Next',
 ];
