@@ -12,4 +12,5 @@ return [
     'publications2' => 'Publications',
     'report_5y_title' => '5-Year Total Articles Statistics',
     'report_5y_citation_title' => 'Statistics of Cited Articles',
+    'source' => 'Source',
 ];

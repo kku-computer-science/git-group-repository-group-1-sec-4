@@ -37,33 +37,43 @@
     <div class="container d-sm-flex justify-content-center mt-5">
         <div id="carouselExampleIndicators" class="carousel slide" data-bs-ride="carousel">
             <div class="carousel-indicators">
-                <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
-                <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1" aria-label="Slide 2"></button>
-                <!-- <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="2"
-                aria-label="Slide 3"></button> -->
+                <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0"
+                        class="active" aria-current="true" aria-label="Slide 1"></button>
+                <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1"
+                        aria-label="Slide 2"></button>
             </div>
             <div class="carousel-inner">
-                <div class="carousel-item active">
-                    <img src="{{asset('img/Banner1.png')}}" class="d-block w-100" alt="...">
-                </div>
-                <div class="carousel-item">
-                    <img src="{{asset('img/Banner2.png')}}" class="d-block w-100" alt="...">
-                </div>
-                <!-- <div class="carousel-item">
-                <img src="..." class="d-block w-100" alt="...">
-            </div> -->
+                @if(app()->getLocale() === 'en')
+                    {{-- กรณีภาษาอังกฤษ ใช้รูป Banner1eng, Banner2eng --}}
+                    <div class="carousel-item active">
+                        <img src="{{ asset('img/Banner1eng.png') }}" class="d-block w-100" alt="Banner 1 EN">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="{{ asset('img/Banner2eng.png') }}" class="d-block w-100" alt="Banner 2 EN">
+                    </div>
+                @else
+                    {{-- กรณีภาษาไทย ใช้รูป Banner1th, Banner2th --}}
+                    <div class="carousel-item active">
+                        <img src="{{ asset('img/Banner1th.png') }}" class="d-block w-100" alt="Banner 1 TH">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="{{ asset('img/Banner2th.png') }}" class="d-block w-100" alt="Banner 2 TH">
+                    </div>
+                @endif
             </div>
-            <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
+
+            <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators"
+                    data-bs-slide="prev">
                 <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                 <span class="visually-hidden">Previous</span>
             </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
+            <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators"
+                    data-bs-slide="next">
                 <span class="carousel-control-next-icon" aria-hidden="true"></span>
                 <span class="visually-hidden">Next</span>
             </button>
         </div>
     </div>
-
 
     <!-- Modal -->
 
