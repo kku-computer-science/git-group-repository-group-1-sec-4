@@ -11,7 +11,7 @@ return [
 'education'=>'Education',
 'publications2' => 'Publications',
 'Research/semire' => 'Academic service projects/ Research projects',
-'projecttitle' => 'Academic Services / Research Projects',
+'project_title' => 'Academic Services / Research Projects',
 'serial' => 'Serial',
 'year' => 'Year',
 'project_name' => 'Project Name',
