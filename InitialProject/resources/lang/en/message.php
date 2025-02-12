@@ -13,4 +13,7 @@ return [
     'report_5y_title' => '5-Year Total Articles Statistics',
     'report_5y_citation_title' => 'Statistics of Cited Articles',
     'source' => 'Source',
+    'computer_science' => 'Computer Science',
+    'information_technology' => 'Information Technology',
+    'geo_informatics' => 'Geo-Informatics',
 ];

@@ -13,4 +13,7 @@ return [
     'report_5y_title' => 'สถิติจำนวนบทความทั้งหมด 5 ปี',
     'report_5y_citation_title' => 'สถิติจำนวนบทความที่ได้รับการอ้างอิง',
     'source' => 'แหล่งที่มา',
+    'computer_science' => 'วิทยาการคอมพิวเตอร์',
+    'information_technology' => 'เทคโนโลยีสารสนเทศ',
+    'geo_informatics' => 'ภูมิสารสนเทศ',
 ];
