@@ -38,5 +38,5 @@ return [
 'reporttitle' => 'Report the total number of articles (5 years : cumulative)',
 'number' => 'Number',
 'reference' => '[Reference]',
-
+'Login' => 'Login',
 ];
