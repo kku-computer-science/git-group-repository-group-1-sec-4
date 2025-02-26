@@ -9,6 +9,7 @@ use App\Models\Fund;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
+use App\Models\ActivityLog;
 
 class ResearchGroupController extends Controller
 {
@@ -78,6 +79,12 @@ class ResearchGroupController extends Controller
                 }
             }
         }
+        ActivityLog::create([
+            'user_id'    => auth()->id(),
+            'action'     => 'create_research_group',
+            'description' => 'User ' . auth()->user()->email
+                . ' created ResearchGroup: ' . $request->group_name_th
+        ]);
         return redirect()->route('researchGroups.index')->with('success', 'research group created successfully.');
     }
 

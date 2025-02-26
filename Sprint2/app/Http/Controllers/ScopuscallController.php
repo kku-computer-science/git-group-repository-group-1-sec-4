@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
+use App\Models\ActivityLog;
 
 class ScopuscallController extends Controller
 {
@@ -114,25 +115,23 @@ class ScopuscallController extends Controller
                             if (array_key_exists('xocs:funding-text', $all['abstracts-retrieval-response']['item']['xocs:meta']['xocs:funding-list'])) {
                                 $funder = $all['abstracts-retrieval-response']['item']['xocs:meta']['xocs:funding-list']['xocs:funding-text'];
                                 $paper->paper_funder = json_encode($funder);
-                            }else{
+                            } else {
                                 $paper->paper_funder = null;
                             }
-                        }else{
+                        } else {
                             $paper->paper_funder = null;
                         }
-                        
+
                         //$paper->paper_funder = $all['abstracts-retrieval-response']['item']['xocs:meta']['xocs:funding-list']['xocs:funding-text'];
                         $paper->abstract = $all['abstracts-retrieval-response']['item']['bibrecord']['head']['abstracts'];
                         //$key = $all['abstracts-retrieval-response']['item']['bibrecord']['head']['citation-info']['author-keywords']['author-keyword'];
-                        
+
                         if (array_key_exists('author-keywords', $all['abstracts-retrieval-response']['item']['bibrecord']['head']['citation-info'])) {
                             $key = $all['abstracts-retrieval-response']['item']['bibrecord']['head']['citation-info']['author-keywords']['author-keyword'];
                             $paper->keyword = json_encode($key);
-                            
-                        }else{
+                        } else {
                             $paper->keyword = null;
                         }
-                        
                     } else {
                         $paper->paper_funder = null;
                         $paper->abstract = null;
@@ -223,12 +222,12 @@ class ScopuscallController extends Controller
                                 //$paper->author()->attach($authorid);
                                 //$user = User::find($id);
                             }*/
-                            if (array_key_exists('ce:given-name', $i)) {
-                                $i['ce:given-name'] = $i['ce:given-name'];
-                            }else{
-                                $i['ce:given-name'] = $i['preferred-name']['ce:given-name'];
-                            }
-                            
+                        if (array_key_exists('ce:given-name', $i)) {
+                            $i['ce:given-name'] = $i['ce:given-name'];
+                        } else {
+                            $i['ce:given-name'] = $i['preferred-name']['ce:given-name'];
+                        }
+
                         if (User::where([['fname_en', '=', $i['ce:given-name']], ['lname_en', '=', $i['ce:surname']]])->orWhere([[DB::raw("concat(left(fname_en,1),'.')"), '=', $i['ce:given-name']], ['lname_en', '=', $i['ce:surname']]])->first() == null) {  //เช็คว่าคนนี้อยู่ใน user ไหม ถ้าไม่มี 
 
                             if (Author::where([['author_fname', '=', $i['ce:given-name']], ['author_lname', '=', $i['ce:surname']]])->first() == null) { //เช็คว่ามีชื่อผู้แต่งคนนี้มีหรือยังในฐานข้อมูล ถ้ายังให้
@@ -271,7 +270,6 @@ class ScopuscallController extends Controller
                         }
                         $x++;
                     }
-                
                 } else { //ถ้ามี ให้ทำต่อไปนี้
                     $paper = Paper::where('paper_name', '=', $item['dc:title'])->first();
                     $paperid = $paper->id;
@@ -283,23 +281,25 @@ class ScopuscallController extends Controller
                             $paper = Paper::find($paperid);
                             $$user->paper()->sync($paper);*/
                         $paper = Paper::find($paperid);
-                        $useaut=Author::where([['author_fname', '=', $user->fname_en], ['author_lname', '=', $user->lname_en]])->first();
-                        if ($useaut != null) {  
-                            $paper->author()->detach($useaut); 
+                        $useaut = Author::where([['author_fname', '=', $user->fname_en], ['author_lname', '=', $user->lname_en]])->first();
+                        if ($useaut != null) {
+                            $paper->author()->detach($useaut);
                             $paper->teacher()->attach($id);
-                        }else {
+                        } else {
                             $paper->teacher()->attach($id);
                         }
-                        
-                       
                     } else {
                         continue;
                     }
                 }
             }
         }
-        //}
-        //return 'succes';
+        ActivityLog::create([
+            'user_id'    => auth()->id(),   // คนที่เรียกใช้งาน (ถ้าเป็น guest/null ก็เช็คก่อน)
+            'action'     => 'call_scopus_api',
+            'description' => 'User ' . auth()->user()->email . ' called Scopus API for userID: ' . $data->id
+                . ' (' . $data->fname_en . ' ' . $data->lname_en . ')'
+        ]);
         return redirect()->back();
     }
 
@@ -337,9 +337,7 @@ class ScopuscallController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
-    {
-    }
+    public function show($id) {}
 
     /**
      * Show the form for editing the specified resource.
