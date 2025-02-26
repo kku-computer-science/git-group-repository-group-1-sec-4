@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\ActivityLog;
 
 class LoginController extends Controller
 {
@@ -54,10 +55,11 @@ class LoginController extends Controller
 
     public function logout(Request $request)
     {
-        \App\Models\ActivityLog::create([
+        ActivityLog::create([
             'user_id'    => auth()->user()->id ?? null,
+            'role'       => auth()->user()->roles->pluck('name')->first() ?? null,
             'action'     => 'logout',
-            'description'=> 'User ' . auth()->user()->email . ' has logged out at '.now()
+            'description' => 'User ' . auth()->user()->email . ' has logged out at ' . now()
         ]);
         $request->session()->flush();
         $request->session()->regenerate();
@@ -100,6 +102,7 @@ class LoginController extends Controller
                 $this->incrementLoginAttempts($request);*/ // login สำเร็จ
 
             $this->fireLockoutEvent($request);
+            
             return $this->sendLockoutResponse($request);
         }
 
@@ -142,15 +145,17 @@ class LoginController extends Controller
         // ]);
         $fieldType = filter_var($request->username, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
         if (!$validator->fails()) {
+            $remember = $request->filled('remember');
+            if (auth()->attempt([$fieldType => $input['username'], 'password' => $input['password']], $remember) /* && $this->checkValidGoogleRecaptchaV3($response) */) {
 
-            if (auth()->attempt(array($fieldType => $input['username'], 'password' => $input['password'])) && $this->checkValidGoogleRecaptchaV3($response)) {
-                \App\Models\ActivityLog::create([
-                    'user_id'    => auth()->user()->id,
-                    'action'     => 'login',
-                    'description'=> 'User ' . auth()->user()->email . ' has logged in at ' . now()
+                ActivityLog::create([
+                    'user_id' => auth()->id(),
+                    'role'    => auth()->user()->roles->pluck('name')->first() ?? null,
+                    'action'  => 'login',
+                    'description' => 'User ' . auth()->user()->email . ' has logged in at ' . now() .
+                        ($remember ? ' (Remember Me enabled)' : '')
                 ]);
-    
-                // (B) ทำการ redirect ตาม role
+
                 if (Auth::user()->hasRole('admin')) {
                     return redirect()->route('dashboard');
                 } elseif (Auth::user()->hasRole('student')) {
@@ -160,16 +165,20 @@ class LoginController extends Controller
                 } elseif (Auth::user()->hasRole('teacher')) {
                     return redirect()->route('dashboard');
                 }
-            }
-            else {
+            } else {
                 // ล็อกอินไม่ผ่าน
                 $this->incrementLoginAttempts($request);
+                ActivityLog::create([
+                    'user_id'    => null,
+                    'role'       => 'guest',
+                    'action'     => 'login_failed',
+                    'description' => 'Login failed for username=' . $request->username . ' at ' . now()
+                ]);
                 return redirect()->back()
                     ->withInput($request->all())
                     ->withErrors(['error' => 'Login Failed: Your user ID or password is incorrect']);
             }
-        } 
-        else {
+        } else {
             // กรณี validate ฟอร์มไม่ผ่าน (เช่นไม่ได้กรอก username/password)
             return redirect('login')->withErrors($validator->errors())->withInput();
         }

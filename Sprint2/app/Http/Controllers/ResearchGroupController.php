@@ -81,6 +81,7 @@ class ResearchGroupController extends Controller
         }
         ActivityLog::create([
             'user_id'    => auth()->id(),
+            'role'       => auth()->user()->roles->pluck('name')->first() ?? null,
             'action'     => 'create_research_group',
             'description' => 'User ' . auth()->user()->email
                 . ' created ResearchGroup: ' . $request->group_name_th
@@ -96,6 +97,13 @@ class ResearchGroupController extends Controller
      */
     public function show(ResearchGroup $researchGroup)
     {
+        ActivityLog::create([
+            'user_id'    => auth()->id(),
+            'role'       => auth()->user()->roles->pluck('name')->first() ?? null,
+            'action'     => 'view_research_group',
+            'description'=> 'User '.auth()->user()->email
+                .' viewed ResearchGroup ID = '.$researchGroup->id
+        ]);
         #$researchGroup=ResearchGroup::find($researchGroup->id);
         //dd($researchGroup->id);
         //$data=ResearchGroup::find($researchGroup->id)->get(); 
@@ -159,6 +167,14 @@ class ResearchGroupController extends Controller
                 }
             }
         }
+        ActivityLog::create([
+            'user_id'    => auth()->id(),
+            'role'       => auth()->user()->roles->pluck('name')->first() ?? null,
+            'action'     => 'update_research_group',
+            'description'=> 'User '.auth()->user()->email
+                 .' updated ResearchGroup ID = '.$researchGroup->id
+                 .' ('.$request->group_name_th.')'
+        ]);
         return redirect()->route('researchGroups.index')
             ->with('success', 'researchGroups updated successfully');
     }
@@ -173,6 +189,13 @@ class ResearchGroupController extends Controller
     {
         $this->authorize('delete', $researchGroup);
         $researchGroup->delete();
+        ActivityLog::create([
+            'user_id'    => auth()->id(),
+            'role'       => auth()->user()->roles->pluck('name')->first() ?? null,
+            'action'     => 'delete_research_group',
+            'description'=> 'User '.auth()->user()->email
+                .' has deleted ResearchGroup ID = '.$researchGroup->id
+        ]);    
         return redirect()->route('researchGroups.index')
             ->with('success', 'researchGroups deleted successfully');
     }

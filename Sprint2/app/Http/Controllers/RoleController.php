@@ -6,6 +6,7 @@ use DB;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use App\Models\ActivityLog;
 
 class RoleController extends Controller
 {
@@ -16,10 +17,10 @@ class RoleController extends Controller
      */
     function __construct()
     {
-         $this->middleware('permission:role-list|role-create|role-edit|role-delete', ['only' => ['index','store']]);
-         $this->middleware('permission:role-create', ['only' => ['create','store']]);
-         $this->middleware('permission:role-edit', ['only' => ['edit','update']]);
-         $this->middleware('permission:role-delete', ['only' => ['destroy']]);
+        $this->middleware('permission:role-list|role-create|role-edit|role-delete', ['only' => ['index', 'store']]);
+        $this->middleware('permission:role-create', ['only' => ['create', 'store']]);
+        $this->middleware('permission:role-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:role-delete', ['only' => ['destroy']]);
     }
 
     /**
@@ -29,7 +30,7 @@ class RoleController extends Controller
      */
     public function index(Request $request)
     {
-        $data = Role::orderBy('id','DESC')->paginate(5);
+        $data = Role::orderBy('id', 'DESC')->paginate(5);
 
         return view('roles.index', compact('data'));
     }
@@ -58,10 +59,16 @@ class RoleController extends Controller
             'name' => 'required|unique:roles,name',
             'permission' => 'required',
         ]);
-    
+
         $role = Role::create(['name' => $request->input('name')]);
         $role->syncPermissions($request->input('permission'));
-    
+        ActivityLog::create([
+            'user_id'    => auth()->id(),
+            'role'       => auth()->user()->roles->pluck('name')->first() ?? null,
+            'action'     => 'create_role',
+            'description' => 'User ' . auth()->user()->email . ' created a new role ID = ' . $role->id
+        ]);
+
         return redirect()->route('roles.index')
             ->with('success', 'Role created successfully.');
     }
@@ -76,9 +83,16 @@ class RoleController extends Controller
     {
         $role = Role::find($id);
         $rolePermissions = Permission::join('role_has_permissions', 'role_has_permissions.permission_id', 'permissions.id')
-            ->where('role_has_permissions.role_id',$id)
+            ->where('role_has_permissions.role_id', $id)
             ->get();
-    
+
+        ActivityLog::create([
+            'user_id'    => auth()->id(),
+            'role'       => auth()->user()->roles->pluck('name')->first() ?? null,
+            'action'     => 'view_role_detail',
+            'description' => 'User ' . auth()->user()->email . ' viewed role ID = ' . $id
+        ]);
+
         return view('roles.show', compact('role', 'rolePermissions'));
     }
 
@@ -96,7 +110,7 @@ class RoleController extends Controller
             ->where('role_has_permissions.role_id', $id)
             ->pluck('role_has_permissions.permission_id', 'role_has_permissions.permission_id')
             ->all();
-    
+
         return view('roles.edit', compact('role', 'permission', 'rolePermissions'));
     }
 
@@ -113,13 +127,18 @@ class RoleController extends Controller
             'name' => 'required',
             'permission' => 'required',
         ]);
-    
+
         $role = Role::find($id);
         $role->name = $request->input('name');
         $role->save();
-    
+
         $role->syncPermissions($request->input('permission'));
-    
+        ActivityLog::create([
+            'user_id'    => auth()->id(),
+            'role'       => auth()->user()->roles->pluck('name')->first() ?? null,
+            'action'     => 'edit_role',
+            'description' => 'User ' . auth()->user()->email . ' edited role ID = ' . $role->id
+        ]);
         return redirect()->route('roles.index')
             ->with('success', 'Role updated successfully.');
     }
@@ -132,8 +151,18 @@ class RoleController extends Controller
      */
     public function destroy($id)
     {
-        Role::find($id)->delete();
-        
+        $role = Role::find($id);
+
+        // 6) บันทึก Log การลบ Role (ควรบันทึกก่อนลบ เพื่อยังเข้าถึง $role->id ได้สะดวก)
+        ActivityLog::create([
+            'user_id'    => auth()->id(),
+            'role'       => auth()->user()->roles->pluck('name')->first() ?? null,
+            'action'     => 'delete_role',
+            'description' => 'User ' . auth()->user()->email . ' deleted role ID = ' . $id
+        ]);
+
+        $role->delete();
+
         return redirect()->route('roles.index')
             ->with('success', 'Role deleted successfully');
     }

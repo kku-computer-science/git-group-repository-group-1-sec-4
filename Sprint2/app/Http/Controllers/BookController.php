@@ -7,6 +7,7 @@ use App\Models\Paper;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\ActivityLog;
 
 class BookController extends Controller
 {
@@ -73,6 +74,15 @@ class BookController extends Controller
             'ac_year' => 'required',
         ]);
 
+        ActivityLog::create([
+            'user_id'     => auth()->id(),
+            'role'        => auth()->user()->roles->pluck('name')->first() ?? 'guest',
+            'action'      => 'store_book',
+            'description' => 'User ' . auth()->user()->email
+                             . ' added a new book: ' . $request->ac_name
+                             . ' at ' . now()
+        ]);
+    
         $input = $request->except(['_token']);
         $input['ac_type'] = 'book';
         $acw = Academicwork::create($input);
@@ -91,6 +101,13 @@ class BookController extends Controller
      */
     public function show($id)
     {
+        ActivityLog::create([
+            'user_id'     => auth()->check() ? auth()->id() : null,
+            'role'        => auth()->check() ? auth()->user()->roles->pluck('name')->first() : 'guest',
+            'action'      => 'view_book_detail',
+            'description' => 'User ' . (auth()->check() ? auth()->user()->email : 'guest')
+                             . ' viewed book detail id=' . $id . ' at ' . now()
+        ]);
         $paper = Academicwork::find($id);
         return view('books.show', compact('paper'));
     }

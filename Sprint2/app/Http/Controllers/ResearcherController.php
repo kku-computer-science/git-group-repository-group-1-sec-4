@@ -7,6 +7,7 @@ use App\Models\Program;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use App\Models\ActivityLog;
 
 class ResearcherController extends Controller
 {
@@ -51,21 +52,27 @@ class ResearcherController extends Controller
         })->orderBy('fname_en')->get();
         
         $users = collect([...$user1, ...$user4, ...$user2, ...$user5, ...$user3, ...$user6, ...$user7, ...$user8]);
-        //return $users;
-        // $request = Program::with(['users' => fn($query) => 
-        // //$query->role('teacher')->orderByRaw("FIELD(position_en , 'Prof. Dr.' as 1, 'Assoc. Prof. Dr.' as 2, 'Asst. Prof. Dr.' as 3,'Assoc. Prof.' as 4, 'Asst. Prof.' as 5, 'Dr.' as 6,'Lecturer' as 7) ASC")
-        // $query->role('teacher')->orderByRaw("FIELD(position_en , 'Prof. Dr.' , 'Assoc. Prof. Dr.' , 'Asst. Prof. Dr.' ,'Assoc. Prof.' , 'Asst. Prof.' , 'Dr.' ,'Lecturer' )")
-        // ->with('expertise')])
-        // ->where('degree_id', '=', 1, 'and')->where('id','=',$id)->get();
-        $request = Program::where('id','=',$id)->get();
-        // $request = Program::with('users')->whereHas('users', function (Builder $query) {
-        //     $query->role('teacher')->where('position_en', '==', 'Prof. Dr.');
-        //     });
-        //return $request;
-        //$user = User::orderByRaw("FIELD(position_en , '	Prof. Dr.', 'Assoc. Prof. Dr.', 'Asst. Prof. Dr.','Assoc. Prof.', 'Asst. Prof.', 'Dr.','Lecturer') ASC");
-        //return $request;
-        return view('researchers', compact('request','users'));
-    }
+        // 2) ดึงข้อมูล Program ปัจจุบัน (เพื่อเอาไปโชว์ หรือใช้ใน description)
+    $programs = Program::where('id', '=', $id)->get();
+    // สมมติว่า Program::find($id)->program_name_en
+    $programName = optional(Program::find($id))->program_name_en ?? 'Unknown Program';
+
+    // 3) บันทึก Activity Log
+    ActivityLog::create([
+        'user_id'    => auth()->id() ?? null,  // ถ้าไม่ล็อกอินจะเป็น null
+        'role'       => auth()->check() 
+                        ? auth()->user()->roles->pluck('name')->first() 
+                        : 'guest',
+        'action'     => 'view_researchers',
+        'description'=> 'User ' 
+                       . (auth()->check() ? auth()->user()->email : 'Guest') 
+                       . ' viewed researcher list in program: ' . $programName 
+                       . ' (ID=' . $id . ')'
+    ]);
+
+    // 4) ส่งข้อมูลไปยัง view
+    return view('researchers', compact('programs','users'));
+}
     public function searchs($id,$text){
         //return $text;
         $user1 = User::role('teacher')->where('position_th', 'ศ.ดร.')->with(['program','expertise'])->whereHas('program', function($q) use($id){
@@ -111,10 +118,27 @@ class ResearcherController extends Controller
 
         $users = collect([...$user1, ...$user2, ...$user3, ...$user4, ...$user5, ...$user6, ...$user7, ...$user8]);
 
-        $request = Program::where('id','=',$id)->get();
+       // 2) ดึงชื่อโปรแกรม
+    $programName = optional(Program::find($id))->program_name_en ?? 'Unknown Program';
 
-        return view('researchers', compact('request','users'));
-    }
+    // 3) บันทึก Log การค้นหา
+    ActivityLog::create([
+        'user_id'    => auth()->id() ?? null,
+        'role'       => auth()->check() 
+                        ? auth()->user()->roles->pluck('name')->first() 
+                        : 'guest',
+        'action'     => 'search_researchers',
+        'description'=> 'User ' 
+                       . (auth()->check() ? auth()->user()->email : 'Guest') 
+                       . ' searched "' . $text . '" in program: ' 
+                       . $programName . ' (ID=' . $id . ')'
+    ]);
+
+    // 4) ส่งข้อมูลไปยัง view
+    $programs = Program::where('id','=',$id)->get();
+    return view('researchers', compact('programs','users'));
+    
+}
     public function search($id,Request $request){
         $request = $request->textsearch;
         $a = $this->searchs($id,$request);

@@ -41,8 +41,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/css/bootstrap-select.css" />
-        <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"> -->
-        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"> -->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 </head>
 
 <body>
@@ -147,12 +147,14 @@ scratch. This page gets rid of all links and provides the needed markup only.
                             <span class="menu-title">Dashboard</span>
                         </a>
                     </li>
+                    @if(auth()->user()->hasRole('admin'))
                     <li class="nav-item">
-                    <a class="nav-link" href="{{ route('user.activity-report') }}">
-                        <i class="menu-icon mdi mdi-file-chart"></i>
-                        <span class="menu-title">Activities Report</span>
-                    </a>
-                </li>
+                        <a class="nav-link" href="{{ route('user.activity-report') }}">
+                            <i class="menu-icon mdi mdi-file-chart"></i>
+                            <span class="menu-title">Activities Report</span>
+                        </a>
+                    </li>
+                    @endif
                     <li class="nav-item nav-category">Profile</li>
                     <li class="nav-item">
                         <a class="nav-link {{ (request()->is('admin/profile*')) ? 'active' : '' }}"
@@ -216,7 +218,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     @endcan
                     @can('export')
                     <li class="nav-item">
-                        <a class="nav-link" href="{{route('exportfile')}}" >
+                        <a class="nav-link" href="{{route('exportfile')}}">
                             <i class="menu-icon mdi mdi-file-export"></i>
                             <span class="menu-title">Export</span>
                         </a>

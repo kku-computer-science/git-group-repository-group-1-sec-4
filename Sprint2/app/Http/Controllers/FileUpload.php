@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\File;
 use Illuminate\Support\Facades\Storage;
+use App\Models\ActivityLog;
+
 class FileUpload extends Controller
 {
   public function createForm(){
@@ -26,6 +28,14 @@ class FileUpload extends Controller
             $fileModel->file_path = '/storage/' . $filePath;
             $fileModel->save();
 
+            ActivityLog::create([
+                'user_id' => auth()->check() ? auth()->user()->id : null,
+                'role'    => auth()->check() ? auth()->user()->roles->pluck('name')->first() : 'guest',
+                'action'  => 'file_upload',
+                'description' => 'User ' . (auth()->check() ? auth()->user()->email : 'guest') . 
+                                 ' uploaded file: ' . $fileName . ' at ' . now()
+            ]);
+
             return back()
             ->with('success','File has been uploaded.')
             ->with('file', $fileName);
@@ -39,6 +49,14 @@ class FileUpload extends Controller
         return view('show',compact('files'));
     }
     public function download($file){
+        ActivityLog::create([
+            'user_id' => auth()->check() ? auth()->user()->id : null,
+            'role'    => auth()->check() ? auth()->user()->roles->pluck('name')->first() : 'guest',
+            'action'  => 'file_download',
+            'description' => 'User ' . (auth()->check() ? auth()->user()->email : 'guest') .
+                             ' downloaded file: ' . $file . ' at ' . now()
+        ]);
+
         //return Storage::download($file);
         return response()->download(storage_path('/'. $file));
         //return response()->download(storage_path('/storage/app/files/'.$file));

@@ -295,7 +295,8 @@ class ScopuscallController extends Controller
             }
         }
         ActivityLog::create([
-            'user_id'    => auth()->id(),   // คนที่เรียกใช้งาน (ถ้าเป็น guest/null ก็เช็คก่อน)
+            'user_id'    => auth()->id(),  
+            'role'       => auth()->user()->roles->pluck('name')->first() ?? null,
             'action'     => 'call_scopus_api',
             'description' => 'User ' . auth()->user()->email . ' called Scopus API for userID: ' . $data->id
                 . ' (' . $data->fname_en . ' ' . $data->lname_en . ')'

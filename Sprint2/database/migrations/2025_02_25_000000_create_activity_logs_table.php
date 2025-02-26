@@ -11,8 +11,9 @@ class CreateActivityLogsTable extends Migration
         Schema::create('activity_logs', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id')->nullable();
-            $table->string('action')->nullable();      // ex. "login", "logout", "create", "update"
-            $table->text('description')->nullable();   // รายละเอียดเพิ่มเติม
+            $table->string('role')->nullable(); 
+            $table->string('action')->nullable();      
+            $table->text('description')->nullable();   
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');

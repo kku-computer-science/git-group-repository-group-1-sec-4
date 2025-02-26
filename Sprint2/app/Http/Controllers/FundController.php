@@ -83,6 +83,7 @@ class FundController extends Controller
         $user->fund()->Create($input);
         ActivityLog::create([
             'user_id'    => auth()->id(),
+            'role'       => auth()->user()->roles->pluck('name')->first() ?? null,
             'action'     => 'create_fund',
             'description' => 'User ' . auth()->user()->email
                 . ' created a new Fund: ' . $request->fund_name
@@ -98,6 +99,13 @@ class FundController extends Controller
      */
     public function show(Fund $fund)
     {
+        ActivityLog::create([
+            'user_id'    => auth()->id(),
+            'role'       => auth()->user()->roles->pluck('name')->first() ?? null,
+            'action'     => 'view_fund',
+            'description'=> 'User '.auth()->user()->email
+                .' viewed Fund ID = '.$fund->id
+        ]);
         return view('funds.show', compact('fund'));
     }
 
@@ -135,9 +143,18 @@ class FundController extends Controller
             $input['fund_level'] = null;
         }
         $fund->update($input);
+        ActivityLog::create([
+            'user_id'    => auth()->id(),
+            'role'       => auth()->user()->roles->pluck('name')->first() ?? null,
+            'action'     => 'update_fund',
+            'description'=> 'User '.auth()->user()->email
+                .' updated Fund ID = '.$fund->id
+                .' ('.$request->fund_name.')'
+        ]);
         return redirect()->route('funds.index')
             ->with('success', 'Fund updated successfully');
     }
+
 
     /**
      * Remove the specified resource from storage.
@@ -148,6 +165,13 @@ class FundController extends Controller
     public function destroy(Fund $fund)
     {
         $fund->delete();
+        ActivityLog::create([
+            'user_id'    => auth()->id(),
+            'role'       => auth()->user()->roles->pluck('name')->first() ?? null,
+            'action'     => 'delete_fund',
+            'description'=> 'User '.auth()->user()->email
+                .' has deleted Fund ID = '.$fund->id
+        ]);
 
         return redirect()->route('funds.index')
             ->with('success', 'Fund deleted successfully');

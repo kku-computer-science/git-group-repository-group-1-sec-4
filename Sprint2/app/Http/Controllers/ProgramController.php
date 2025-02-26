@@ -8,6 +8,7 @@ use App\Models\Program;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use SebastianBergmann\Environment\Console;
+use App\Models\ActivityLog;
 
 class ProgramController extends Controller
 {
@@ -18,11 +19,11 @@ class ProgramController extends Controller
      */
     function __construct()
     {
-         $this->middleware('permission:programs-list|programs-create|programs-edit|programs-delete', ['only' => ['index','store']]);
-         $this->middleware('permission:programs-create', ['only' => ['create','store']]);
-         $this->middleware('permission:programs-edit', ['only' => ['edit','update']]);
-         $this->middleware('permission:programs-delete', ['only' => ['destroy']]);
-         //Redirect::to('dashboard')->send();
+        $this->middleware('permission:programs-list|programs-create|programs-edit|programs-delete', ['only' => ['index', 'store']]);
+        $this->middleware('permission:programs-create', ['only' => ['create', 'store']]);
+        $this->middleware('permission:programs-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:programs-delete', ['only' => ['destroy']]);
+        //Redirect::to('dashboard')->send();
     }
 
     public function index()
@@ -77,6 +78,12 @@ class ProgramController extends Controller
             $pro2->program_name_en = $request->program_name_en;
             $pro2->program_name_th = $request->program_name_th;
             $pro2->save();
+            ActivityLog::create([
+                'user_id'    => auth()->id(),
+                'role'       => auth()->user()->roles->pluck('name')->first() ?? null,
+                'action'     => 'create_program',
+                'description' => 'User ' . auth()->user()->email . ' created program ID = ' . $pro2->id
+            ]);
             //$pro2::Create(['program_name_en' => $request->program_name_en, 'program_name_th' => $request->program_name_th]);
             //$pro2->department()->associate($department);
             // $pro2 = $pro2->department()->save($department);
@@ -94,13 +101,17 @@ class ProgramController extends Controller
             $pro = $pro->department()->associate($department);
             $pro->save();
             $pro::updateOrCreate(['id' => $proId], ['program_name_en' => $request->program_name_en, 'program_name_th' => $request->program_name_th]);
-        
-            
+            ActivityLog::create([
+                'user_id'    => auth()->id(),
+                'role'       => auth()->user()->roles->pluck('name')->first() ?? null,
+                'action'     => 'edit_program',
+                'description' => 'User ' . auth()->user()->email . ' edited program ID = ' . $pro->id
+            ]);
         }
-        
+
         //$pro->save();
         //$pro2::updateOrCreate(['id' => $proId], ['program_name_en' => $request->program_name_en, 'program_name_th' => $request->program_name_th]);
-        
+
 
         if (empty($request->pro_id))
             $msg = 'Program entry created successfully.';
@@ -140,9 +151,7 @@ class ProgramController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
-    {
-    }
+    public function update(Request $request, $id) {}
 
     /**
      * Remove the specified resource from storage.
@@ -152,6 +161,12 @@ class ProgramController extends Controller
      */
     public function destroy($id)
     {
+        ActivityLog::create([
+            'user_id'    => auth()->id(),
+            'role'       => auth()->user()->roles->pluck('name')->first() ?? null,
+            'action'     => 'delete_program',
+            'description' => 'User ' . auth()->user()->email . ' deleted program ID = ' . $id
+        ]);
         $pro = Program::where('id', $id)->delete();
         return response()->json($pro);
     }

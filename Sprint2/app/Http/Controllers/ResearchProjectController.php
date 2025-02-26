@@ -138,6 +138,7 @@ class ResearchProjectController extends Controller
 
         ActivityLog::create([
             'user_id'    => auth()->id(),
+            'role'       => auth()->user()->roles->pluck('name')->first() ?? null,
             'action'     => 'create_research_project',
             'description' => 'User ' . auth()->user()->email
                 . ' created Project: ' . $request->project_name
@@ -157,6 +158,13 @@ class ResearchProjectController extends Controller
      */
     public function show(ResearchProject $researchProject)
     {
+        ActivityLog::create([
+            'user_id'    => auth()->id(),
+            'role'       => auth()->user()->roles->pluck('name')->first() ?? null,
+            'action'     => 'view_research_project',
+            'description' => 'User ' . auth()->user()->email
+                . ' viewed Project ID = ' . $researchProject->id
+        ]);
         return view('research_projects.show', compact('researchProject'));
     }
 
@@ -258,6 +266,14 @@ class ResearchProjectController extends Controller
                 //$x++;
             }
         }
+        ActivityLog::create([
+            'user_id'    => auth()->id(),
+            'role'       => auth()->user()->roles->pluck('name')->first() ?? null,
+            'action'     => 'update_research_project',
+            'description' => 'User ' . auth()->user()->email
+                . ' updated Project ID = ' . $researchProject->id
+                . ' (' . $request->project_name . ')'
+        ]);
         return redirect()->route('researchProjects.index')
             ->with('success', 'Research Project updated successfully');
     }
@@ -273,6 +289,13 @@ class ResearchProjectController extends Controller
 
         $this->authorize('delete', $researchProject);
         $researchProject->delete();
+        ActivityLog::create([
+            'user_id'    => auth()->id(),
+            'role'       => auth()->user()->roles->pluck('name')->first() ?? null,
+            'action'     => 'delete_research_project',
+            'description' => 'User ' . auth()->user()->email
+                . ' has deleted Project ID = ' . $researchProject->id
+        ]);
         return redirect()->route('researchProjects.index')
             ->with('success', 'Research Project deleted successfully');
     }

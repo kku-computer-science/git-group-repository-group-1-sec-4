@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use DB;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Permission;
+use App\Models\ActivityLog;
 
 class PermissionController extends Controller
 {
@@ -15,10 +16,10 @@ class PermissionController extends Controller
      */
     function __construct()
     {
-         $this->middleware('permission:permission-list|permission-create|permission-edit|permission-delete', ['only' => ['index','store']]);
-         $this->middleware('permission:permission-create', ['only' => ['create','store']]);
-         $this->middleware('permission:permission-edit', ['only' => ['edit','update']]);
-         $this->middleware('permission:permission-delete', ['only' => ['destroy']]);
+        $this->middleware('permission:permission-list|permission-create|permission-edit|permission-delete', ['only' => ['index', 'store']]);
+        $this->middleware('permission:permission-create', ['only' => ['create', 'store']]);
+        $this->middleware('permission:permission-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:permission-delete', ['only' => ['destroy']]);
     }
 
     /**
@@ -54,9 +55,18 @@ class PermissionController extends Controller
         $this->validate($request, [
             'name' => 'required|unique:permissions,name',
         ]);
-    
-        Permission::create(['name' => $request->input('name')]);
-    
+
+        // สร้าง Permission
+        $permission = Permission::create(['name' => $request->input('name')]);
+
+        // 3) บันทึก Log การสร้าง Permission
+        ActivityLog::create([
+            'user_id'    => auth()->id(),
+            'role'       => auth()->user()->roles->pluck('name')->first() ?? null,
+            'action'     => 'create_permission',
+            'description' => 'User ' . auth()->user()->email . ' created permission ID = ' . $permission->id
+        ]);
+
         return redirect()->route('permissions.index')
             ->with('success', 'Permission created successfully.');
     }
@@ -70,7 +80,15 @@ class PermissionController extends Controller
     public function show($id)
     {
         $permission = Permission::find($id);
-    
+
+        // 4) บันทึก Log การดูรายละเอียด (ถ้าต้องการ)
+        ActivityLog::create([
+            'user_id'    => auth()->id(),
+            'role'       => auth()->user()->roles->pluck('name')->first() ?? null,
+            'action'     => 'view_permission_detail',
+            'description' => 'User ' . auth()->user()->email . ' viewed permission ID = ' . $id
+        ]);
+
         return view('permissions.show', compact('permission'));
     }
 
@@ -83,7 +101,7 @@ class PermissionController extends Controller
     public function edit($id)
     {
         $permission = Permission::find($id);
-    
+
         return view('permissions.edit', compact('permission'));
     }
 
@@ -99,11 +117,18 @@ class PermissionController extends Controller
         $this->validate($request, [
             'name' => 'required'
         ]);
-    
+
         $permission = Permission::find($id);
         $permission->name = $request->input('name');
         $permission->save();
-        
+
+        ActivityLog::create([
+            'user_id'    => auth()->id(),
+            'role'       => auth()->user()->roles->pluck('name')->first() ?? null,
+            'action'     => 'edit_permission',
+            'description' => 'User ' . auth()->user()->email . ' edited permission ID = ' . $permission->id
+        ]);
+
         return redirect()->route('permissions.index')
             ->with('success', 'Permission updated successfully.');
     }
@@ -116,8 +141,18 @@ class PermissionController extends Controller
      */
     public function destroy($id)
     {
-        Permission::find($id)->delete();
-        
+        $permission = Permission::find($id);
+
+        // 6) บันทึก Log การลบ Permission
+        ActivityLog::create([
+            'user_id'    => auth()->id(),
+            'role'       => auth()->user()->roles->pluck('name')->first() ?? null,
+            'action'     => 'delete_permission',
+            'description' => 'User ' . auth()->user()->email . ' deleted permission ID = ' . $id
+        ]);
+
+        $permission->delete();
+
         return redirect()->route('permissions.index')
             ->with('success', 'Permission deleted successfully');
     }

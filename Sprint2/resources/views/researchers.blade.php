@@ -2,7 +2,7 @@
 @section('content')
 <div class="container card-2">
     <p class="title"> Researchers </p>
-    @foreach($request as $res)
+    @foreach($programs as $res)
     <span>
         <ion-icon name="caret-forward-outline" size="small"></ion-icon> {{$res->program_name_en}}
     </span>

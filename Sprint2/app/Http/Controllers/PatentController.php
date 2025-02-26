@@ -7,6 +7,7 @@ use App\Models\Author;
 use App\Models\Paper;
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Models\ActivityLog;
 
 class PatentController extends Controller
 {
@@ -73,7 +74,14 @@ class PatentController extends Controller
         //$input['paper_yearpub'] = $input['paper_yearpub'];
         //return $input;
         $acw = Academicwork::create($input);
-
+        ActivityLog::create([
+            'user_id'     => auth()->id(),
+            'role'        => auth()->user()->roles->pluck('name')->first() ?? 'guest',
+            'action'      => 'store_patent',
+            'description' => 'User ' . auth()->user()->email 
+                             . ' created a new patent: ' . $request->ac_name 
+                             . ' at ' . now()
+        ]);
         $id = auth()->user()->id;
         $user = User::find($id);
 
@@ -145,6 +153,14 @@ class PatentController extends Controller
      */
     public function show($id)
     {
+        ActivityLog::create([
+            'user_id'     => auth()->check() ? auth()->id() : null,
+            'role'        => auth()->check() ? auth()->user()->roles->pluck('name')->first() : 'guest',
+            'action'      => 'view_patent_detail',
+            'description' => 'User ' . (auth()->check() ? auth()->user()->email : 'guest')
+                             . ' viewed patent detail with id=' . $id 
+                             . ' at ' . now()
+        ]);
         $patent = Academicwork::find($id);
         return view('patents.show', compact('patent'));
     }

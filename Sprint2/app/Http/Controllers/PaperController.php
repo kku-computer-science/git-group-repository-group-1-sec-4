@@ -15,6 +15,8 @@ use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Contracts\Encryption\DecryptException;
+use App\Models\ActivityLog;
+
 class PaperController extends Controller
 {
     /**
@@ -78,6 +80,14 @@ class PaperController extends Controller
             //'paper_citation' => 'required',
             //'paper_page' => 'required',
             'paper_doi' => 'required',
+        ]);
+        ActivityLog::create([
+            'user_id'     => auth()->id(),
+            'role'        => auth()->user()->roles->pluck('name')->first() ?? 'guest',
+            'action'      => 'store_paper',
+            'description' => 'User ' . auth()->user()->email 
+                             . ' added a new published research: ' . $request->paper_name 
+                             . ' at ' . now()
         ]);
         $input = $request->except(['_token']);
 
@@ -166,6 +176,14 @@ class PaperController extends Controller
      */
     public function show(Paper $paper)
     {
+        ActivityLog::create([
+            'user_id'     => auth()->check() ? auth()->id() : null,
+            'role'        => auth()->check() ? auth()->user()->roles->pluck('name')->first() : 'guest',
+            'action'      => 'view_paper_detail',
+            'description' => 'User ' 
+                             . (auth()->check() ? auth()->user()->email : 'guest')
+                             . ' viewed published research detail (ID=' . $paper->id . ') at ' . now()
+        ]);
         $k = collect($paper['keyword']);
         $val = $k->implode('$', ', ');
         $paper['keyword'] = $val;
