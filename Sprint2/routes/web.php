@@ -37,6 +37,7 @@ use App\Http\Controllers\PageController;
 use App\Http\Controllers\TestController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProgramController;
+use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\TcicallController;
 /*
 |--------------------------------------------------------------------------
@@ -122,6 +123,9 @@ Route::group(['middleware' => ['isAdmin', 'auth', 'PreventBackHistory']], functi
     Route::get('user/activity-report', 
         [\App\Http\Controllers\Admin\ActivityLogController::class,'index']
     )->name('user.activity-report');
+    Route::get('user/activity-report/export-pdf',
+        [ActivityLogController::class,'exportPDF']
+    )->name('user.activity-report.export-pdf');
 
 });
 Route::group(['middleware' => ['auth', 'PreventBackHistory']], function () {
