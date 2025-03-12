@@ -44,7 +44,25 @@ class ActivityLogController extends Controller
             }
         }
 
+
+
+        $actionListQuery = clone $query;
+
+        // 4) กรองตาม action (ถ้ามีการส่ง action_filter มา)
+        $actionFilter = $request->input('action_filter');
+        if ($actionFilter && $actionFilter != '') {
+            $query->where('action', $actionFilter);
+        }
+
+        // 5) สุดท้ายค่อย paginate
         $activities = $query->paginate(10);
+
+        // 6) ดึงรายการ action ที่เหลืออยู่ใน table หลังกรอง role + date (แต่ยังไม่กรอง action)
+        //    เพื่อนำไปสร้าง dropdown
+        $distinctActions = $actionListQuery
+            ->select('action')
+            ->distinct()
+            ->pluck('action'); // จะได้เป็น Collection ของ action ที่มี
 
         $loginCountQuery = ActivityLog::where('action', 'login');
         if ($request->has('role') && $request->role != '') {
@@ -72,10 +90,7 @@ class ActivityLogController extends Controller
 
         $newUsersQuery = ActivityLog::where('action', 'create_user');
 
-        // กรอง role
-        if ($request->has('role') && $request->role != '') {
-            $newUsersQuery->where('role', $request->role);
-        }
+
 
         // กรองช่วงเวลาเหมือนกัน
         if ($dateFilter == 'daily') {
@@ -94,7 +109,28 @@ class ActivityLogController extends Controller
             }
         }
 
-        $newUsersCount = $newUsersQuery->count();
+        $newUsersLogs = $newUsersQuery->get(); // ดึงทั้งหมดก่อน
+
+        $newUsersCount = 0; // เดี๋ยวเราจะคำนวณเอง
+
+        // ถ้ามี request('role') เช่น teacher, student, ...
+        if ($request->has('role') && $request->role != '') {
+            foreach ($newUsersLogs as $log) {
+                // ตัวอย่าง description: "User admin@gmail.com created a new user ID = 12"
+                // ใช้ regex ดึงเลข user ID = (\d+)
+                if (preg_match('/user\s+ID\s*=\s*(\d+)/i', $log->description, $m)) {
+                    $createdUserId = $m[1];
+                    // ไปหา user จริง ๆ
+                    $createdUser = \App\Models\User::find($createdUserId);
+                    if ($createdUser && $createdUser->hasRole($request->role)) {
+                        $newUsersCount++;
+                    }
+                }
+            }
+        } else {
+            // กรณีไม่ได้กรอง role => แสดงจำนวน log create_user ทั้งหมด
+            $newUsersCount = $newUsersLogs->count();
+        }
 
         $loginFailuresQuery = ActivityLog::where('action', 'login_failed');
 
@@ -127,9 +163,7 @@ class ActivityLogController extends Controller
         // 2) นับ Delete Users
         $deleteUsersQuery = ActivityLog::where('action', 'delete_user');
 
-        if ($request->has('role') && $request->role != '') {
-            $deleteUsersQuery->where('role', $request->role);
-        }
+
 
         // กรองช่วงเวลาตาม date_filter
         if ($dateFilter == 'daily') {
@@ -147,9 +181,25 @@ class ActivityLogController extends Controller
                 $deleteUsersQuery->whereBetween('created_at', [$startDate, $endDate]);
             }
         }
-        $deleteUsersCount = $deleteUsersQuery->count();
+        $deleteUsersLogs = $deleteUsersQuery->get();
 
+        $deleteUsersCount = 0;
 
+        if ($request->has('role') && $request->role != '') {
+            foreach ($deleteUsersLogs as $log) {
+                // ตัวอย่าง description ที่เราแก้ไขใน UserController@destroy:
+                // "User admin@gmail.com deleted user ID = 33 (target_role=teacher)"
+                if (preg_match('/target_role\s*=\s*([\w]+)/i', $log->description, $m)) {
+                    $targetRole = strtolower($m[1]);
+                    if ($targetRole == strtolower($request->role)) {
+                        $deleteUsersCount++;
+                    }
+                }
+            }
+        } else {
+            // ไม่ได้กรอง role => นับทั้งหมด
+            $deleteUsersCount = $deleteUsersLogs->count();
+        }
 
         $guestViewQuery = ActivityLog::where('action', 'view_researchers')
             ->where('role', 'guest');
@@ -287,184 +337,110 @@ class ActivityLogController extends Controller
         // นับ total activities ทั้งหมด
         $totalActivities = $totalActivitiesQuery->count();
 
+        // สร้าง query สำหรับนับ logins (action = 'login') โดยใช้ filter role + date_filter เหมือนกับตาราง
+        $chartQuery = ActivityLog::where('action', 'login');
 
+        // ถ้ามีการเลือก role
+        if ($request->has('role') && $request->role != '') {
+            $chartQuery->where('role', $request->role);
+        }
 
-        $teacherLoginQuery = ActivityLog::where('role', 'teacher')
-            ->where('action', 'login');
-
+        // จากนั้นประยุกต์เงื่อนไข dateFilter เหมือนที่ใช้ใน $query
         if ($dateFilter == 'daily') {
-            $teacherLoginQuery->whereDate('created_at', now()->toDateString());
+            $chartQuery->whereDate('created_at', now()->toDateString());
         } elseif ($dateFilter == 'weekly') {
-            $teacherLoginQuery->whereBetween('created_at', [
+            $chartQuery->whereBetween('created_at', [
                 now()->startOfWeek(),
                 now()->endOfWeek()
             ]);
         } elseif ($dateFilter == 'monthly') {
-            $teacherLoginQuery->whereMonth('created_at', now()->month)
+            $chartQuery->whereMonth('created_at', now()->month)
                 ->whereYear('created_at', now()->year);
         } elseif ($dateFilter == 'custom') {
             if ($startDate && $endDate) {
-                $teacherLoginQuery->whereBetween('created_at', [$startDate, $endDate]);
+                $chartQuery->whereBetween('created_at', [$startDate, $endDate]);
             }
         }
-        $teacherLoginPerMonth = $teacherLoginQuery
-            ->selectRaw('MONTH(created_at) as month, COUNT(*) as total')
-            ->groupBy('month')
-            ->orderBy('month')
+
+        // สมมติเราจะ groupBy วันที่ (DATE(created_at)) เพื่อดูยอดต่อวัน
+        // ถ้าอยากเปลี่ยนเป็น groupBy เดือน ก็เปลี่ยน DATE(created_at) เป็น MONTH(created_at) ได้
+        $chartData = $chartQuery->selectRaw('DATE(created_at) as date, COUNT(*) as total')
+            ->groupBy('date')
+            ->orderBy('date')
             ->get();
 
-        $lineFilter = $request->input('line_filter', 'teacher');
-        // ถ้าไม่มีค่าจะใช้ 'teacher' เป็น default
+        // แปลงข้อมูลเป็น array สำหรับส่งไปยัง blade
+        $lineChartLabels = $chartData->pluck('date');  // รายการวันที่
+        $lineChartValues = $chartData->pluck('total'); // จำนวน login ต่อวัน
 
-        // สมมติว่าเราจะ query ตาราง activity_logs
-        // เพื่อดูจำนวนการ login ของ role ที่เลือก (lineFilter) แยกรายเดือน
-        $loginQuery = ActivityLog::where('action', 'login')
-            ->where('role', $lineFilter);
+        // กำหนดชื่อกราฟตาม date_filter
+        $chartTitle = 'Logins';
+        switch ($dateFilter) {
+            case 'daily':
+                $chartTitle .= ' Today';
+                break;
+            case 'weekly':
+                $chartTitle .= ' This Week';
+                break;
+            case 'monthly':
+                $chartTitle .= ' This Month';
+                break;
+            case 'custom':
+                // สมมติว่าแสดงช่วงวัน เช่น 2025-03-01 to 2025-03-07
+                $chartTitle .= " ({$startDate} to {$endDate})";
+                break;
+            default:
+                $chartTitle .= ' (All Time)';
+                break;
+        }
 
-        // เพิ่มเงื่อนไขกรองตาม dateFilter (daily, weekly, monthly, custom) เหมือนเดิม
+        // ถ้ามีเลือก role ก็เติมต่อท้าย
+        if ($request->role) {
+            $chartTitle .= ' (' . ucfirst($request->role) . ')';
+        }
+
+        // 1) สร้าง query สำหรับนับการ call paper
+        $callPaperQuery = ActivityLog::where('action', 'call_scopus_api');
+        // หรือถ้าเปลี่ยนเป็น 'call_paper' ก็ได้ตาม action ที่คุณกำหนด
+
+        // 2) กรองเฉพาะ Date Filter (ไม่สน role)
+        // (copy เงื่อนไขเดียวกับส่วน loginCountQuery หรือ newUsersQuery เกี่ยวกับวันที่)
         if ($dateFilter == 'daily') {
-            $loginQuery->whereDate('created_at', now()->toDateString());
+            $callPaperQuery->whereDate('created_at', now()->toDateString());
         } elseif ($dateFilter == 'weekly') {
-            $loginQuery->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
+            $callPaperQuery->whereBetween('created_at', [
+                now()->startOfWeek(),
+                now()->endOfWeek()
+            ]);
         } elseif ($dateFilter == 'monthly') {
-            $loginQuery->whereMonth('created_at', now()->month)
+            $callPaperQuery->whereMonth('created_at', now()->month)
                 ->whereYear('created_at', now()->year);
         } elseif ($dateFilter == 'custom') {
             if ($startDate && $endDate) {
-                $loginQuery->whereBetween('created_at', [$startDate, $endDate]);
+                $callPaperQuery->whereBetween('created_at', [$startDate, $endDate]);
             }
         }
 
-        // จากนั้น groupBy เดือน แล้วนับจำนวน
-        // ตัวอย่าง: select MONTH(created_at) as month, COUNT(*) as total
-        $loginPerMonth = $loginQuery
-            ->selectRaw('MONTH(created_at) as month, COUNT(*) as total')
-            ->groupBy('month')
-            ->orderBy('month')
-            ->get();
-
-        $lineChartMonths = [];
-        $lineChartData   = [];
-        foreach ($loginPerMonth as $item) {
-            $lineChartMonths[] = $item->month;
-            $lineChartData[]   = $item->total;
-        }
-        $lineChartRole = ucfirst($lineFilter);
+        // 3) สุดท้ายนับจำนวน
+        $callPaperCount = $callPaperQuery->count();
 
         return view(
             'dashboards.users.activity-report.index',
             compact(
                 'activities',
+                'distinctActions',
+                'actionFilter',
                 'loginCount',
                 'newUsersCount',
                 'loginFailuresCount',
                 'deleteUsersCount',
-                'lineChartMonths',
-                'lineChartData',
-                'lineChartRole',
+                'chartTitle',
+                'lineChartLabels',
+                'lineChartValues',
+                'callPaperCount',
                 'topPrograms',
                 'topEmails'
             )
         );
-    }
-    public function exportPDF(Request $request)
-    {
-        // 1) ดึงข้อมูลแบบเดียวกับใน index() แต่ไม่ paginate
-        $query = ActivityLog::with('user')->orderBy('created_at', 'desc');
-
-        if ($request->has('role') && $request->role != '') {
-            $query->where('role', $request->role);
-        }
-
-        $dateFilter = $request->input('date_filter');
-        $startDate  = $request->input('start_date');
-        $endDate    = $request->input('end_date');
-
-        // ตัวอย่างการกรองช่วงเวลา
-        if ($dateFilter == 'daily') {
-            $query->whereDate('created_at', now()->toDateString());
-        } elseif ($dateFilter == 'weekly') {
-            $query->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
-        } elseif ($dateFilter == 'monthly') {
-            $query->whereMonth('created_at', now()->month)
-                ->whereYear('created_at', now()->year);
-        } elseif ($dateFilter == 'custom') {
-            if ($startDate && $endDate) {
-                $query->whereBetween('created_at', [$startDate, $endDate]);
-            }
-        }
-
-        // ดึงทั้งหมด (ไม่ paginate)
-        $activities = $query->get();
-
-        // 2) เก็บสถิติต่าง ๆ (เช่นเดียวกับใน index)
-        $loginCount = ActivityLog::where('action', 'login')->count();
-        $newUsersCount = ActivityLog::where('action', 'create_user')->count();
-        $newFundsCount = ActivityLog::where('action', 'create_fund')->count();
-        $newResearchProjectsCount = ActivityLog::where('action', 'create_research_project')->count();
-
-        $totalActivities = ActivityLog::count();
-        $createUserCount = ActivityLog::where('action', 'create_user')->count();
-        $createUserPercent = $totalActivities > 0
-            ? ($createUserCount / $totalActivities) * 100
-            : 0;
-
-        // **ตัวอย่าง** สร้าง keyInsights (array) ที่จะส่งไปให้ View
-        // เช่น สรุป Top 3 Actions, หรือ top 3 Roles ที่ใช้งานเยอะที่สุด
-        $keyInsights = [];
-
-        // ตัวอย่าง 1: สรุป top 3 actions
-        $topActions = ActivityLog::selectRaw('action, COUNT(*) as total')
-            ->groupBy('action')
-            ->orderByDesc('total')
-            ->limit(3)
-            ->get();
-
-        // แปลงข้อมูล topActions เป็นข้อความสั้น ๆ
-        // เช่น "1) login (10 times), 2) create_user (7 times), 3) file_upload (5 times)"
-        if ($topActions->count() > 0) {
-            $desc = $topActions->map(function ($item, $idx) {
-                return ($idx + 1) . ') ' . $item->action . ' (' . $item->total . ' times)';
-            })->join(', ');
-            $keyInsights[] = "Top 3 actions: " . $desc;
-        }
-
-        // ตัวอย่าง 2: สรุป Top role ที่เจอบ่อยสุด (ยกตัวอย่าง)
-        $topRoles = ActivityLog::selectRaw('role, COUNT(*) as total')
-            ->whereNotNull('role')
-            ->groupBy('role')
-            ->orderByDesc('total')
-            ->limit(2)
-            ->get();
-        if ($topRoles->count() > 0) {
-            $desc2 = $topRoles->map(function ($item, $idx) {
-                return ($idx + 1) . ') ' . $item->role . ' (' . $item->total . ' times)';
-            })->join(', ');
-            $keyInsights[] = "Roles with highest activities: " . $desc2;
-        }
-
-        // 3) โหลด view สำหรับ PDF
-        $pdf = Pdf::loadView('dashboards.users.activity-report.export-pdf', [
-            'activities' => $activities,
-
-            // สถิติเบื้องต้น
-            'loginCount' => $loginCount,
-            'newUsersCount' => $newUsersCount,
-            'newFundsCount' => $newFundsCount,
-            'newResearchProjectsCount' => $newResearchProjectsCount,
-            'createUserPercent' => $createUserPercent,
-
-            // ข้อมูลเสริม
-            'keyInsights' => $keyInsights,
-
-            // เอา role, date_filter ไปแสดงในไฟล์ pdf ด้วย
-            'role' => $request->role,
-            'date_filter' => $request->date_filter,
-            'startDate' => $request->start_date,
-            'endDate' => $request->end_date,
-        ]);
-
-        // 4) return download
-        return $pdf->download('ActivityReport.pdf');
     }
 }

@@ -202,7 +202,7 @@ class UserController extends Controller
         $pro_id = $request->sub_cat;
         $program = Program::find($pro_id);
         $user->program()->associate($program);
-        $user->save(); 
+        $user->save();
         ActivityLog::create([
             'user_id'    => auth()->id(),
             'role'       => auth()->user()->roles->pluck('name')->first() ?? null,
@@ -223,13 +223,17 @@ class UserController extends Controller
     {
         $user = User::find($id);
 
-        // สร้าง Activity Log
+        // ดึง role ของ user ที่จะถูกลบ (target_role)
+        $targetRole = $user->roles->pluck('name')->first() ?? 'N/A';
+
         ActivityLog::create([
             'user_id'    => auth()->id(),
             'role'       => auth()->user()->roles->pluck('name')->first() ?? null,
             'action'     => 'delete_user',
-            'description' => 'User ' . auth()->user()->email . ' deleted user ID = ' . $id
+            // บันทึก target_role ลงใน description ด้วย
+            'description' => 'User ' . auth()->user()->email . ' deleted user ID = ' . $id . ' (target_role=' . $targetRole . ')'
         ]);
+
 
         // จากนั้นค่อยลบ user
         $user->delete();

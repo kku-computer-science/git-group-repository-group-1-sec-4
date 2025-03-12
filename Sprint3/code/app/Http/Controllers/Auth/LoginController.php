@@ -102,7 +102,7 @@ class LoginController extends Controller
                 $this->incrementLoginAttempts($request);*/ // login สำเร็จ
 
             $this->fireLockoutEvent($request);
-            
+
             return $this->sendLockoutResponse($request);
         }
 
@@ -168,12 +168,28 @@ class LoginController extends Controller
             } else {
                 // ล็อกอินไม่ผ่าน
                 $this->incrementLoginAttempts($request);
+
+                // 1) ตรวจสอบว่า email ที่ใส่ มี user ในระบบหรือไม่
+                $foundUser = \App\Models\User::where('email', $request->username)->first();
+
+                // 2) ถ้ามี user, ให้ดึง role ของ user นั้น; ถ้าไม่มีให้เก็บเป็น guest
+                $failRole = 'guest';
+                if ($foundUser) {
+                    // ดึง role ตัวแรก (กรณีมีหลาย role ให้ปรับตามต้องการ)
+                    $userRole = $foundUser->roles->pluck('name')->first();
+                    if ($userRole) {
+                        $failRole = $userRole;
+                    }
+                }
+
+                // 3) บันทึก Log โดยเก็บ role เป็น role ของ user ที่พบ
                 ActivityLog::create([
-                    'user_id'    => null,
-                    'role'       => 'guest',
+                    'user_id'    => $foundUser ? $foundUser->id : null,
+                    'role'       => $failRole,
                     'action'     => 'login_failed',
                     'description' => 'Login failed for username=' . $request->username . ' at ' . now()
                 ]);
+
                 return redirect()->back()
                     ->withInput($request->all())
                     ->withErrors(['error' => 'Login Failed: Your user ID or password is incorrect']);

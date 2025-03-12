@@ -107,7 +107,7 @@ Route::get('/callscopus/{id}', [App\Http\Controllers\ScopuscallController::class
 
 Route::group(['middleware' => ['isAdmin', 'auth', 'PreventBackHistory']], function () {
     //Route::post('change-profile-picture',[ProfileuserController::class,'updatePicture'])->name('adminPictureUpdate');
-    
+
     Route::resource('users', UserController::class);
     Route::resource('roles', RoleController::class);
     Route::resource('permissions', PermissionController::class);
@@ -127,13 +127,11 @@ Route::group(['middleware' => ['isAdmin', 'auth', 'PreventBackHistory']], functi
     Route::post('import', [ImportExportController::class, 'import']);
 
     // **** สำคัญ: เพิ่ม Route ต่อไปนี้ เพื่อแสดงหน้า ActivityLog ****
-    Route::get('user/activity-report', 
-        [\App\Http\Controllers\Admin\ActivityLogController::class,'index']
+    Route::get(
+        'user/activity-report',
+        [\App\Http\Controllers\Admin\ActivityLogController::class, 'index']
     )->name('user.activity-report');
-    Route::get('user/activity-report/export-pdf',
-        [ActivityLogController::class,'exportPDF']
-    )->name('user.activity-report.export-pdf');
-
+    
 });
 Route::group(['middleware' => ['auth', 'PreventBackHistory']], function () {
     //Route::get('profile',[UserController::class,'profile'])->name('profile2');

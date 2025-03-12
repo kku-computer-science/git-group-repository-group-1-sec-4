@@ -146,7 +146,16 @@ class ScopuscallController extends Controller
                     $source = Source_data::findOrFail(1);
                     $paper->source()->sync($source);
 
-                    $all_au = $all['abstracts-retrieval-response']['authors']['author'];
+                    // ก่อนใช้งาน เช็คว่ามี 'authors' และ 'author' ไหม
+                    if (
+                        isset($all['abstracts-retrieval-response']['authors'])
+                        && isset($all['abstracts-retrieval-response']['authors']['author'])
+                    ) {
+                        $all_au = $all['abstracts-retrieval-response']['authors']['author'];
+                    } else {
+                        // กรณีไม่มี authors → อาจข้ามเลย continue หรือกำหนด $all_au=[] ก็ได้
+                        continue;
+                    }
                     // if (array_key_exists('author', $all['message']['items'][0])) {
                     //     //$all_au = $all['message']['items'][0]['author'];
                     //     if (array_key_exists('ce:given-name', $all['message']['items'][0]['author'][0])) {
@@ -295,7 +304,7 @@ class ScopuscallController extends Controller
             }
         }
         ActivityLog::create([
-            'user_id'    => auth()->id(),  
+            'user_id'    => auth()->id(),
             'role'       => auth()->user()->roles->pluck('name')->first() ?? null,
             'action'     => 'call_scopus_api',
             'description' => 'User ' . auth()->user()->email . ' called Scopus API for userID: ' . $data->id

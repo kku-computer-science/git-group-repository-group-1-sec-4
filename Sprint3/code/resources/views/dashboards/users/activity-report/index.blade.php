@@ -64,10 +64,7 @@
   <!-- ส่วนบนของ index.blade.php -->
   <div class="d-flex justify-content-between mb-2">
     <h4>User Activities Report</h4>
-    <a href="{{ route('user.activity-report.export-pdf', request()->all()) }}"
-      class="btn btn-sm btn-danger">
-      Export PDF
-    </a>
+
   </div>
 
   <div class="row mb-3">
@@ -97,7 +94,7 @@
       </div>
     </div>
 
-    <!-- Card #3: Login Failures -->
+
     <div class="col-xl-3 col-md-6 mb-4">
       <div class="card border-left-info shadow h-100 py-2">
         <div class="card-body">
@@ -122,8 +119,8 @@
       </div>
     </div>
 
-    <!-- Card #2: New Users -->
-    <div class="col-xl-3 col-md-6 mb-4">
+
+    <div class="col-xl-2 col-md-6 mb-4">
       <div class="card border-left-success shadow h-100 py-2">
         <div class="card-body">
           <div class="row no-gutters align-items-center">
@@ -146,8 +143,8 @@
       </div>
     </div>
 
-    <!-- Card #4: Delete Users -->
-    <div class="col-xl-3 col-md-6 mb-4">
+
+    <div class="col-xl-2 col-md-6 mb-4">
       <div class="card border-left-warning shadow h-100 py-2">
         <div class="card-body">
           <div class="row no-gutters align-items-center">
@@ -171,6 +168,28 @@
       </div>
     </div>
 
+
+    <div class="col-xl-2 col-md-6 mb-4">
+      <div class="card border-left-secondary shadow h-100 py-2">
+        <div class="card-body">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="text-xs font-weight-bold text-dark text-uppercase mb-1">
+                Call Paper (Teacher)
+              </div>
+              <div class="h5 mb-0 font-weight-bold text-gray-800">
+                {{ $callPaperCount }}
+              </div>
+            </div>
+            <div class="col-auto">
+              <!-- ไอคอนอะไรก็ได้ -->
+              <i class="fas fa-file-alt fa-2x text-gray-300"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- เริ่มต้นแถว (row) ใหม่ เพื่อวาง 2 การ์ดข้างกัน -->
     <div class="row mb-3">
       <!-- คอลัมน์ซ้าย: Logins per Month -->
@@ -180,46 +199,10 @@
           <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
             <!-- เปลี่ยนชื่อหัวข้อได้ตามต้องการ -->
             <h6 class="m-0 font-weight-bold text-primary">
-              Logins per Month ({{ $lineChartRole ?? 'Teacher' }})
+              {{ $chartTitle ?? 'Logins' }}
             </h6>
 
-            <!-- เพิ่ม Dropdown ตรงนี้ -->
-            <div class="dropdown no-arrow">
-              <a class="dropdown-toggle" href="#" role="button" id="lineChartMenuLink"
-                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-              </a>
-              <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
-                aria-labelledby="lineChartMenuLink">
-                <div class="dropdown-header">Choose Role</div>
-                <!-- ตัวอย่างรายการ Role ที่ให้ผู้ใช้เลือก -->
-                <a class="dropdown-item"
-                  href="{{ route('user.activity-report', array_merge(request()->all(), ['line_filter' => 'teacher'])) }}">
-                  Teacher
-                </a>
-                <a class="dropdown-item"
-                  href="{{ route('user.activity-report', array_merge(request()->all(), ['line_filter' => 'student'])) }}">
-                  Student
-                </a>
-                <a class="dropdown-item"
-                  href="{{ route('user.activity-report', array_merge(request()->all(), ['line_filter' => 'admin'])) }}">
-                  Admin
-                </a>
-                <a class="dropdown-item"
-                  href="{{ route('user.activity-report', array_merge(request()->all(), ['line_filter' => 'staff'])) }}">
-                  Staff
-                </a>
-                <a class="dropdown-item"
-                  href="{{ route('user.activity-report', array_merge(request()->all(), ['line_filter' => 'headproject'])) }}">
-                  Head Project
-                </a>
-                <a class="dropdown-item"
-                  href="{{ route('user.activity-report', array_merge(request()->all(), ['line_filter' => 'guest'])) }}">
-                  Guest
-                </a>
-              </div>
-            </div>
-            <!-- end Dropdown -->
+
           </div>
 
           <!-- Card Body -->
@@ -292,7 +275,7 @@
                 <span>
                   #{{ $index + 1 }}
                   {{ $tp['program']->program_name_en }}
-                  (ID={{ $tp['program']->id }})
+                  {{-- ลบ (ID={{ $tp['program']->id }}) ทิ้ง --}}
                 </span>
                 <span class="badge bg-primary rounded-pill">
                   {{ $tp['count'] }} views
@@ -300,6 +283,7 @@
               </li>
               @endforeach
             </ul>
+
             @else
             <p class="mb-0">No data found for guest views.</p>
             @endif
@@ -310,6 +294,39 @@
       <!-- จบคอลัมน์ขวา -->
     </div>
     <!-- จบ row mb-3 -->
+
+    <!-- ตัวอย่าง: วางฟอร์มสำหรับ Filter Action เหนือตาราง Activities Log -->
+    <div class="mb-3">
+      <form method="GET" action="{{ route('user.activity-report') }}" class="row g-3">
+        <!-- ส่งค่า role/date_filter/start_date/end_date กลับไปด้วย เพื่อคงค่า filter เดิม -->
+        <input type="hidden" name="role" value="{{ request('role') }}">
+        <input type="hidden" name="date_filter" value="{{ request('date_filter') }}">
+        <input type="hidden" name="start_date" value="{{ request('start_date') }}">
+        <input type="hidden" name="end_date" value="{{ request('end_date') }}">
+
+        <div class="col-auto">
+          <label for="action_filter" class="col-form-label fw-bold">Filter by Action:</label>
+        </div>
+        <div class="col-auto">
+          <select name="action_filter" id="action_filter" class="form-select">
+            <option value="">-- All Actions --</option>
+            @if(!empty($distinctActions))
+            @foreach($distinctActions as $act)
+            <option value="{{ $act }}"
+              @if(request('action_filter')==$act) selected @endif>
+              {{ $act }}
+            </option>
+            @endforeach
+            @endif
+          </select>
+        </div>
+
+        <div class="col-auto">
+          <button type="submit" class="btn btn-primary">Filter Action</button>
+        </div>
+      </form>
+    </div>
+
 
 
     <!-- Activities Table -->
@@ -351,25 +368,24 @@
       </div>
       @if($activities->hasPages())
       <div class="card-footer">
-        {{ $activities->links() }}
+        {{ $activities->appends(request()->all())->links() }}
       </div>
       @endif
     </div>
   </div>
   <script>
-    let lineMonths = @json($lineChartMonths);
-    let lineData = @json($lineChartData);
-    let lineChartRole = @json($lineChartRole); // ใช้ระบุว่าเป็น "Teacher", "Student", "Admin", เป็นต้น
+    let lineLabels = @json($lineChartLabels);
+    let lineData = @json($lineChartValues);
+    let chartTitle = @json($chartTitle);
 
-    // สร้าง Line Chart
+
     var ctx = document.getElementById("myAreaChart").getContext('2d');
     var myLineChart = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: lineMonths,
+        labels: lineLabels,
         datasets: [{
-          // ตรงนี้จะใช้ label เป็น lineChartRole + " Logins"
-          label: lineChartRole + " Logins",
+          label: chartTitle,
           data: lineData,
           backgroundColor: "rgba(78,115,223,0.05)",
           borderColor: "rgba(78,115,223,1)",

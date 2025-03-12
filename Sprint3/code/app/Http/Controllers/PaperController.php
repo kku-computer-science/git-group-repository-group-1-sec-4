@@ -34,11 +34,11 @@ class PaperController extends Controller
         $papers = $user->paper()->get();
         return response()->json($papers);*/
         if (auth()->user()->hasRole('admin') or auth()->user()->hasRole('staff')) {
-            $papers = Paper::with('teacher', 'author')->orderBy('paper_yearpub', 'desc')-> get();
+            $papers = Paper::with('teacher', 'author')->orderBy('paper_yearpub', 'desc')->get();
         } else {
             $papers = Paper::with('teacher', 'author')->whereHas('teacher', function ($query) use ($id) {
                 $query->where('users.id', '=', $id);
-            })->orderBy('paper_yearpub', 'desc')-> get();
+            })->orderBy('paper_yearpub', 'desc')->get();
         }
 
         // $papers = Paper::with('teacher','author')->whereHas('teacher', function($query) use($id) {
@@ -85,9 +85,9 @@ class PaperController extends Controller
             'user_id'     => auth()->id(),
             'role'        => auth()->user()->roles->pluck('name')->first() ?? 'guest',
             'action'      => 'store_paper',
-            'description' => 'User ' . auth()->user()->email 
-                             . ' added a new published research: ' . $request->paper_name 
-                             . ' at ' . now()
+            'description' => 'User ' . auth()->user()->email
+                . ' added a new published research: ' . $request->paper_name
+                . ' at ' . now()
         ]);
         $input = $request->except(['_token']);
 
@@ -128,7 +128,7 @@ class PaperController extends Controller
 
         //$paper->author()->detach();
         $x = 1;
-        
+
         if (isset($input['fname'][0]) and (!empty($input['fname'][0]))) {
             $length = count($request->input('fname'));
             foreach ($request->input('fname') as $key => $value) {
@@ -180,9 +180,9 @@ class PaperController extends Controller
             'user_id'     => auth()->check() ? auth()->id() : null,
             'role'        => auth()->check() ? auth()->user()->roles->pluck('name')->first() : 'guest',
             'action'      => 'view_paper_detail',
-            'description' => 'User ' 
-                             . (auth()->check() ? auth()->user()->email : 'guest')
-                             . ' viewed published research detail (ID=' . $paper->id . ') at ' . now()
+            'description' => 'User '
+                . (auth()->check() ? auth()->user()->email : 'guest')
+                . ' viewed published research detail (ID=' . $paper->id . ') at ' . now()
         ]);
         $k = collect($paper['keyword']);
         $val = $k->implode('$', ', ');
@@ -215,7 +215,6 @@ class PaperController extends Controller
             $paperSource = $paper->source->pluck('source_name', 'source_name')->all();
             $users = User::role(['teacher', 'student'])->get();
             return view('papers.edit', compact('paper', 'users', 'paperSource', 'sources'));
-
         } catch (DecryptException   $e) {
             return abort(404, "page not found");
         }
@@ -251,7 +250,7 @@ class PaperController extends Controller
             array_push($myNewArray, $a);
         }
         $input['keyword'] = $myNewArray;
-//return $input;
+        //return $input;
         $paper->update($input);
 
         $paper->author()->detach();
@@ -332,10 +331,7 @@ class PaperController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
-    {
-        
-    }
+    public function destroy($id) {}
 
     public function export(Request $request)
     {
