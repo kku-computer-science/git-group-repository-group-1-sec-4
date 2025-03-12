@@ -48,21 +48,25 @@ class ActivityLogController extends Controller
 
         $actionListQuery = clone $query;
 
-        // 4) กรองตาม action (ถ้ามีการส่ง action_filter มา)
+        // 3) ส่วนของการ filter action
         $actionFilter = $request->input('action_filter');
         if ($actionFilter && $actionFilter != '') {
             $query->where('action', $actionFilter);
         }
 
-        // 5) สุดท้ายค่อย paginate
+        // 4) สุดท้ายค่อย paginate
         $activities = $query->paginate(10);
 
-        // 6) ดึงรายการ action ที่เหลืออยู่ใน table หลังกรอง role + date (แต่ยังไม่กรอง action)
-        //    เพื่อนำไปสร้าง dropdown
+        // ***** แก้ไขตรงนี้ *****
+        // ลบคำสั่ง orderBy('created_at','desc') ออกจาก $actionListQuery
+        // วิธีง่าย ๆ คือ reset order ด้วย ->reorder() หรือเคลียร์ orders
+        $actionListQuery->getQuery()->orders = null;
+
+        // 5) ดึง distinct action จาก $actionListQuery ที่ไม่มี orderBy
         $distinctActions = $actionListQuery
             ->select('action')
             ->distinct()
-            ->pluck('action'); // จะได้เป็น Collection ของ action ที่มี
+            ->pluck('action');
 
         $loginCountQuery = ActivityLog::where('action', 'login');
         if ($request->has('role') && $request->role != '') {
