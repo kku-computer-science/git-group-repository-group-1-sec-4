@@ -28,3 +28,18 @@
 #### Fixed
 
 -แก้ไขบั๊กที่ทำให้หน้า Report แสดงข้อมูลผิดพลาด
+
+## [Sprint 3] [2025-03-13]
+
+### การทำ Report Activity [As an admin, I want a report of user's activitities in the system, so that I can plan better.]
+
+#### Added
+
+-เพิ่มตาราง Activities Log เข้ามาในหน้า Activities Report
+-เพิ่มการ Filter ข้อมูลในส่วนของ Activities Log
+-เพิ่มการแสดงข้อมูลเกี่ยวกับกิจกรรมของผู้ใช้งานว่าดูคณะไหนบ่อยที่สุด
+
+#### Fixed
+
+-นำปุ่ม Export PDF ออก
+-แก้ไขการแสดงข้อมูลในหน้า Activities Report
