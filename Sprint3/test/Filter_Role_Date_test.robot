@@ -23,28 +23,64 @@ Login And Go To Activity Report
     Go To Activity Report Page
     Wait Until Location Contains    /user/activity-report    10s
     Capture Page Screenshot    filter1.png
+
+Select And Filter Role - admin
+    [Documentation]    ทดสอบการเลือกฟิลเตอร์ "admin"
     Select And Filter Role    admin
     Capture Page Screenshot    filter2.png
+
+Select And Filter Role - student
+    [Documentation]    ทดสอบการเลือกฟิลเตอร์ "student"
     Select And Filter Role    student
     Capture Page Screenshot    filter3.png
+
+Select And Filter Role - teacher
+    [Documentation]    ทดสอบการเลือกฟิลเตอร์ "teacher"
     Select And Filter Role    teacher
     Capture Page Screenshot    filter4.png
+
+Select And Filter Role - staff
+    [Documentation]    ทดสอบการเลือกฟิลเตอร์ "staff"
     Select And Filter Role    staff
     Capture Page Screenshot    filter5.png
+
+Select And Filter Role - headproject
+    [Documentation]    ทดสอบการเลือกฟิลเตอร์ "headproject"
     Select And Filter Role    headproject
     Capture Page Screenshot    filter6.png
+
+Select And Filter Role - guest
+    [Documentation]    ทดสอบการเลือกฟิลเตอร์ "guest"
     Select And Filter Role    guest
     Capture Page Screenshot    filter7.png
+
+Select And Filter Role - teacher (again)
+    [Documentation]    ทดสอบการเลือกฟิลเตอร์ "teacher" (อีกครั้ง)
     Select And Filter Role    teacher
     Capture Page Screenshot    filter8.png
-    Select And Filter Date    daily   # เลือก Today
+
+Select And Filter Date - daily
+    [Documentation]    ทดสอบการเลือกฟิลเตอร์ "daily" (Today)
+    Select And Filter Date    daily
     Capture Page Screenshot    filter9.png
-    Select And Filter Date    weekly  # เลือก This Week
+
+Select And Filter Date - weekly
+    [Documentation]    ทดสอบการเลือกฟิลเตอร์ "weekly" (This Week)
+    Select And Filter Date    weekly
     Capture Page Screenshot    filter10.png
+
+Select And Filter Date - monthly
+    [Documentation]    ทดสอบการเลือกฟิลเตอร์ "monthly"
     Select And Filter Date    monthly
     Capture Page Screenshot    filter11.png
-    Select And Filter Date    custom  # เลือก Custom Range
+
+Select And Filter Date - custom
+    [Documentation]    ทดสอบการเลือกฟิลเตอร์ "custom" (Custom Range)
+    Select And Filter Date    custom
     Capture Page Screenshot    filter12.png
+
+Set Date Filter - 11/03/2025 to 13/03/2025
+    [Documentation]    ทดสอบการเลือกฟิลเตอร์วันที่ระหว่าง 11/03/2025 ถึง 13/03/2025
     Set Date Filter    11/03/2025    13/03/2025
     Capture Page Screenshot    filter13.png
 
